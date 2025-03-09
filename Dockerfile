@@ -65,11 +65,12 @@ COPY --from=builder /app/Cargo.toml /app/
 ENV RUST_LOG="info"
 ENV LEPTOS_SITE_ADDR="0.0.0.0:8080"
 ENV LEPTOS_SITE_ROOT="site"
-ENV PORT=8080
 ENV IP=0.0.0.0
+ENV ADDRESS=0.0.0.0
 
 # Expose the port
 EXPOSE 8080
+EXPOSE 10000
 
 # Run the server
 CMD ["/app/server"]
