@@ -10,16 +10,18 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 # Build dependencies using cargo-chef cache
 FROM chef AS builder
+
+# Install required tools
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends protobuf-compiler ffmpeg curl wget \
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
-# Install required tools
-RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends clang protobuf-compiler ffmpeg curl wget \
-  && apt-get autoremove -y \
-  && apt-get clean -y \
-  && rm -rf /var/lib/apt/lists/*
 
 RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.11/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
@@ -55,7 +57,7 @@ RUN apt-get update -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy the built application
-COPY --from=builder /app/target/release/dl_reddit /app/
+COPY --from=builder /app/target/release/server /app/
 COPY --from=builder /app/target/site /app/site
 COPY --from=builder /app/Cargo.toml /app/
 
@@ -70,4 +72,4 @@ ENV IP=0.0.0.0
 EXPOSE 8080
 
 # Run the server
-CMD ["/app/dl_reddit"]
+CMD ["/app/server"]
