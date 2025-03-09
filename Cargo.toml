@@ -1,0 +1,54 @@
+[workspace]
+resolver = "2"
+members = ["api", "app", "frontend", "server", "shared"]
+
+[workspace.dependencies]
+leptos = { version = "0.7.3" }
+leptos_meta = { version = "0.7.3" }
+leptos_router = { version = "0.7.3" }
+leptos_actix = "0.7.7"
+actix-web = { version = "4", features = ["macros"] }
+console_error_panic_hook = "0.1"
+tokio = { version = "1.43.0", features = ["full"] }
+wasm-bindgen = "=0.2.100"
+log = "0.4.26"
+pretty_env_logger = "0.5.0"
+serde = "1.0.218"
+serde_json = "1.0.140"
+console_log = "1"
+
+
+[[workspace.metadata.leptos]]
+name = "dl_reddit"
+bin-package = "server"
+lib-package = "frontend"
+
+site-root = "target/site"
+site-pkg-dir = "pkg"
+
+tailwind-input-file = "style/tailwind.css"
+assets-dir = "assets"
+
+site-addr = "127.0.0.1:8080"
+reload-port = 3001
+
+browserquery = "defaults"
+
+watch = false
+
+env = "DEV"
+
+bin-features = []
+lib-features = []
+
+bin-default-features = false
+lib-default-features = false
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 'z'
+
+[profile.dev]
+opt-level = 0
+debug = 0

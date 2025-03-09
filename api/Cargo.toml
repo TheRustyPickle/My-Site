@@ -1,0 +1,29 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+leptos.workspace = true
+log.workspace = true
+leptos_actix = { workspace = true, optional = true }
+actix-web = { workspace = true, optional = true }
+anyhow = { version = "1.0.97", optional = true }
+dash-mpd = { version = "0.18.0", optional = true }
+roux = { version = "2.2.14", optional = true }
+reqwest = { version = "0.12.12", optional = true }
+shared = { path = "../shared" }
+
+[features]
+hydrate = ["leptos/hydrate"]
+ssr = [
+    "leptos/ssr",
+    "dep:anyhow",
+    "dep:roux",
+    "dep:reqwest",
+    "dep:dash-mpd",
+    "dep:leptos_actix",
+    "dep:actix-web",
+]
