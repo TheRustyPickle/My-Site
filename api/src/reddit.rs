@@ -1,21 +1,27 @@
-use actix_web::web::Data;
-use anyhow::{Result, anyhow};
-use dash_mpd::{MPD, fetch::DashDownloader, parse};
-use leptos_actix::extract;
+use anyhow::{anyhow, Result};
+use dash_mpd::{fetch::DashDownloader, parse, MPD};
 use log::info;
 use reqwest::Client;
-use roux::Me;
-use shared::{DlType, DownloadData, DownloadMetadata, Downloads, VideoSize, extract_reddit_id};
-use std::fs;
+use roux::Reddit;
+use shared::{extract_reddit_id, DlType, DownloadData, DownloadMetadata, Downloads, VideoSize};
+use std::{env::var, fs};
 
 pub async fn get_reddit_url(url: &str) -> Result<Downloads> {
     let Some(post_id) = extract_reddit_id(url) else {
         return Err(anyhow!("No reddit url was found in the given url"));
     };
 
-    let client = extract::<Data<Me>>()
+    let username = var("USERNAME").unwrap();
+    let password = var("PASSWORD").unwrap();
+    let client_id = var("CLIENT_TOKEN").unwrap();
+    let secret_id = var("SECRET_TOKEN").unwrap();
+
+    let client = Reddit::new("myapp/0.1", &client_id, &secret_id)
+        .username(&username)
+        .password(&password)
+        .login()
         .await
-        .map_err(|e| anyhow!("Reddit client not found. Reason: {e}"))?;
+        .map_err(|e| anyhow!("Failed to get a reddit client. Reason: {e}"))?;
 
     let submission = client.get_submissions(&format!("t3_{post_id}")).await?;
     let data = submission.data.children;

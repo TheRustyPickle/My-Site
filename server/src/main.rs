@@ -8,7 +8,6 @@ async fn main() -> std::io::Result<()> {
     use leptos_actix::{generate_route_list, LeptosRoutes};
     use leptos_meta::MetaTags;
     use log::{info, LevelFilter};
-    use roux::Reddit;
     use std::env::var;
 
     dotenvy::dotenv().ok();
@@ -19,18 +18,6 @@ async fn main() -> std::io::Result<()> {
         .init();
 
     let conf = get_configuration(None).unwrap();
-
-    let username = var("USERNAME").unwrap();
-    let password = var("PASSWORD").unwrap();
-    let client_id = var("CLIENT_TOKEN").unwrap();
-    let secret_id = var("SECRET_TOKEN").unwrap();
-
-    let client = Reddit::new("myapp/0.1", &client_id, &secret_id)
-        .username(&username)
-        .password(&password)
-        .login()
-        .await
-        .unwrap();
 
     let port = var("PORT")
         .ok()
@@ -79,7 +66,6 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(web::Data::new(leptos_options.to_owned()))
-            .app_data(web::Data::new(client.clone()))
     })
     .bind(&addr)?
     .run()
