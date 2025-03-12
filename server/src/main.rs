@@ -3,6 +3,7 @@ async fn main() -> std::io::Result<()> {
     use actix_files::Files;
     use actix_web::*;
     use app::App;
+    use dev::Service;
     use leptos::config::get_configuration;
     use leptos::prelude::*;
     use leptos_actix::{generate_route_list, LeptosRoutes};
@@ -38,6 +39,30 @@ async fn main() -> std::io::Result<()> {
         info!("listening on http://{}", addr_clone);
 
         App::new()
+            .wrap_fn(|req, srv| {
+                let path = req.path();
+
+                let ip = req
+                    .connection_info()
+                    .realip_remote_addr()
+                    .unwrap_or("Unknown")
+                    .to_string();
+
+                if !path.starts_with("/pkg/")
+                    && !path.ends_with(".js")
+                    && !path.ends_with(".css")
+                    && !path.ends_with(".wasm")
+                    && path != "/sw.js"
+                {
+                    info!("Serving data for path: {path}. Request gotten from: {ip}",);
+                }
+
+                let fut = srv.call(req);
+                async {
+                    let res = fut.await?;
+                    Ok(res)
+                }
+            })
             .service(Files::new("/pkg", format!("{site_root}/pkg")))
             .service(Files::new("/assets", &site_root))
             .service(favicon)
@@ -47,7 +72,7 @@ async fn main() -> std::io::Result<()> {
                     let leptos_options = leptos_options.clone();
                     view! {
                         <!DOCTYPE html>
-                        <html lang="en">
+                        <html lang="en" class="bg-gray-100">
                             <head>
                                 <meta charset="utf-8" />
                                 <meta
@@ -58,7 +83,7 @@ async fn main() -> std::io::Result<()> {
                                 <HydrationScripts options=leptos_options.clone() />
                                 <MetaTags />
                             </head>
-                            <body>
+                            <body class="bg-gray-100">
                                 <App />
                             </body>
                         </html>

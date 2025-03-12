@@ -2,42 +2,12 @@ use api::reddit_downloader;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use shared::{extract_reddit_id, DlType, DownloadData, DownloadMetadata, Downloads};
-use std::collections::HashMap;
-use thaw::{
-    Button, ButtonAppearance, ButtonShape, Card, ConfigProvider, Icon, Input, InputPrefix, Theme,
-};
+use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix};
 
 use crate::utils::create_blob_url;
 
 #[component]
-pub fn HomePage() -> impl IntoView {
-    let theme = RwSignal::new(Theme::light());
-
-    let brand_colors = RwSignal::new(HashMap::from([
-        (10, "#F2F9FF"),
-        (20, "#E0F2FF"),
-        (30, "#C9E6FF"),
-        (40, "#A8D4FF"),
-        (50, "#85C1FF"),
-        (60, "#66AEFF"),
-        (70, "#4A9BFF"),
-        (80, "#3187FF"),
-        (90, "#2074E6"),
-        (100, "#1A66CC"),
-        (110, "#1557B3"),
-        (120, "#104899"),
-        (130, "#0B3A80"),
-        (140, "#072B66"),
-        (150, "#041D4D"),
-        (160, "#021133"),
-    ]));
-
-    let on_customize_light_theme = move || {
-        theme.set(Theme::custom_light(&brand_colors.get_untracked()));
-    };
-
-    on_customize_light_theme();
-
+pub fn RedditDL() -> impl IntoView {
     let link = RwSignal::new(String::from(""));
     let (loading, set_loading) = signal(false);
     let (downloadables, set_downloadables) = signal(None);
@@ -81,47 +51,45 @@ pub fn HomePage() -> impl IntoView {
     };
 
     view! {
-        <ConfigProvider theme>
-            <div class="flex items-center justify-center min-h-screen bg-gray-100">
-                <Card class="!gap-0 p-6 w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5">
-                    <h4 class="text-xl font-semibold text-gray-700 mb-2 flex item-center justify-center">
-                        "Reddit Downloader"
-                    </h4>
-                    <Input
-                        class="w-full p-2"
-                        placeholder="https://reddit.com/r/subreddit/comments/1234/post-details/"
-                        value=link
-                    >
-                        <InputPrefix slot>
-                            <Icon icon=icondata::AiLinkOutlined />
-                        </InputPrefix>
-                    </Input>
+        <div class="flex items-center justify-center p-12">
+            <Card class="!gap-0 w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 !rounded-lg">
+                <h4 class="text-xl font-semibold text-gray-700 mb-2 flex item-center justify-center">
+                    "Reddit Downloader"
+                </h4>
+                <Input
+                    class="w-full p-2"
+                    placeholder="https://reddit.com/r/subreddit/comments/1234/post-details/"
+                    value=link
+                >
+                    <InputPrefix slot>
+                        <Icon icon=icondata::AiLinkOutlined />
+                    </InputPrefix>
+                </Input>
 
-                    <Button
-                        appearance=ButtonAppearance::Primary
-                        shape=ButtonShape::Circular
-                        class="mt-2 w-full !text-white font-semibold"
-                        on_click=valid_reddit_link
-                        loading
-                    >
-                        {move || download_button_text()}
-                    </Button>
+                <Button
+                    appearance=ButtonAppearance::Primary
+                    shape=ButtonShape::Circular
+                    class="mt-2 w-full !text-white font-semibold"
+                    on_click=valid_reddit_link
+                    loading
+                >
+                    {move || download_button_text()}
+                </Button>
 
-                    <Show
-                        when=move || !error_resp.get().is_empty()
-                        fallback=move || {
-                            if downloadables.get().is_some() {
-                                view! { <ShowDownloadables data=downloadables /> }.into_any()
-                            } else {
-                                view! { "" }.into_any()
-                            }
+                <Show
+                    when=move || !error_resp.get().is_empty()
+                    fallback=move || {
+                        if downloadables.get().is_some() {
+                            view! { <ShowDownloadables data=downloadables /> }.into_any()
+                        } else {
+                            view! { "" }.into_any()
                         }
-                    >
-                        <p class="text-red-500 mt-2">{error_resp.get()}</p>
-                    </Show>
-                </Card>
-            </div>
-        </ConfigProvider>
+                    }
+                >
+                    <p class="text-red-500 mt-2">{error_resp.get()}</p>
+                </Show>
+            </Card>
+        </div>
     }
 }
 
@@ -144,14 +112,13 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
     let render_video = move || {
         if let Some(urls) = blob_urls.get() {
             if !urls.is_empty() {
+                let filename = format!("File: {}.{}", urls[0].0.file_name, urls[0].0.extension);
                 view! {
                     <div class="w-full max-w-md mx-auto">
                         <video class="w-full max-h-60 rounded-md" controls>
                             <source src=urls[0].1.clone() type="video/mp4" />
                         </video>
-                        <p class="mt-2 text-gray-700 text-sm text-center">
-                            File: {urls[0].0.file_name.clone()}.{urls[0].0.extension.clone()}
-                        </p>
+                        <p class="mt-2 text-gray-700 text-sm text-center">{filename}</p>
                     </div>
                 }
                 .into_any()
@@ -211,7 +178,10 @@ fn render_image(item: DownloadData) -> impl IntoView {
 
     let url = create_blob_url(mime_type, &item.content);
 
-    let filename = format!("{}.{}", item.metadata.file_name, item.metadata.extension);
+    let filename = format!(
+        "File: {}.{}",
+        item.metadata.file_name, item.metadata.extension
+    );
 
     view! {
         <img
@@ -220,7 +190,7 @@ fn render_image(item: DownloadData) -> impl IntoView {
             alt="Downloadable image"
         />
 
-        <p class="mt-2 text-gray-700 text-sm text-center">File: {filename.clone()}</p>
+        <p class="mt-2 text-gray-700 text-sm text-center">{filename.clone()}</p>
 
         <a
             class="w-full bg-n-blue hover:bg-h-blue rounded-full text-white font-semibold py-2 transition duration-300 flex items-center justify-center"
