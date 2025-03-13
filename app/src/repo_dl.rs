@@ -6,6 +6,7 @@ use shared::{
     models::{ReleaseInfo, RepoReleasesSummary},
 };
 use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize};
+use thousands::Separable;
 
 #[component]
 pub fn RepoDL() -> impl IntoView {
@@ -30,6 +31,7 @@ pub fn RepoDL() -> impl IntoView {
     let get_release_status = move |username, repo| {
         set_error.set(String::new());
         set_loading.set(true);
+        set_release_summary.set(None);
         spawn_local(async move {
             let result = github_checker(username, repo).await;
 
@@ -77,6 +79,7 @@ pub fn RepoDL() -> impl IntoView {
                     class="mt-2 w-full !text-white font-semibold"
                     on_click=valid_github_link
                     loading
+                    disabled=loading
                 >
                     {move || content_button_text()}
                 </Button>
@@ -119,7 +122,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
                     <Card class=card_class>
                         <h3 class="text-lg font-semibold">"Most Downloaded Release"</h3>
                         <p class="text-xl font-bold">{release.tag.clone()}</p>
-                        <p class="text-lg">"Downloads: " {release.total_downloads}</p>
+                        <p class="text-lg">"Downloads: " {release.total_downloads.separate_with_commas()}</p>
                     </Card>
                 </a>
             }
@@ -140,7 +143,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
         let card = view! {
             <Card class=card_class>
                 <h3 class="text-lg font-semibold">{release.tag.clone()}</h3>
-                <p>"Total Downloads: " {release.total_downloads}</p>
+                <p>"Total Downloads: " {release.total_downloads.separate_with_commas()}</p>
 
                 <ul class="mt-2 flex flex-col gap-1">
                     <For
@@ -151,7 +154,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
                                 <li class="text-sm text-gray-700 flex justify-between">
                                     <span>{asset.name.clone()}</span>
                                     <span class="text-gray-500">
-                                        {asset.download_count} " downloads"
+                                        {asset.download_count.separate_with_commas()} " downloads"
                                     </span>
                                 </li>
                             }
@@ -173,7 +176,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
             <div class="px-2 flex flex-col justify-center gap-2 ">
                 <Card class=card_class>
                     <h3 class="text-lg font-semibold">"Total Downloads"</h3>
-                    <p class="text-2xl font-bold">{release_summary.total_downloads}</p>
+                    <p class="text-2xl font-bold">{release_summary.total_downloads.separate_with_commas()}</p>
                 </Card>
 
                 {show_most_downloaded(release_summary.most_downloaded_release.clone())}

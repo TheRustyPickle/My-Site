@@ -76,6 +76,7 @@ pub fn RedditDL() -> impl IntoView {
                     class="mt-2 w-full !text-white font-semibold"
                     on_click=valid_reddit_link
                     loading
+                    disabled=loading
                 >
                     {move || download_button_text()}
                 </Button>
