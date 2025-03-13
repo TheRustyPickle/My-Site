@@ -1,5 +1,5 @@
 mod reddit_dl;
-mod test;
+mod repo_dl;
 mod utils;
 
 use std::collections::HashMap;
@@ -7,10 +7,10 @@ use std::collections::HashMap;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use leptos_router::components::{Route, Router, Routes};
-use leptos_router::hooks::use_navigate;
+use leptos_router::hooks::{use_location, use_navigate};
 use leptos_router::{StaticSegment, WildcardSegment};
 use reddit_dl::RedditDL;
-use test::TestPage;
+use repo_dl::RepoDL;
 use thaw::{ConfigProvider, Tab, TabList, Theme};
 
 #[component]
@@ -44,7 +44,21 @@ pub fn App() -> impl IntoView {
 
     on_customize_light_theme();
 
-    let tab_value = RwSignal::new(String::from("home"));
+    let tab_value = RwSignal::new(String::new());
+
+    let set_tab_value = move || {
+        let location = use_location();
+        move || {
+            let path = location.pathname.get();
+            tab_value.set(match path.as_str() {
+                "/reddit" => "reddit".to_string(),
+                "/repo" => "repo".to_string(),
+                "/about" => "about".to_string(),
+                "/" | "/home" => "home".to_string(),
+                _ => "home".to_string(),
+            });
+        }
+    };
 
     let navigate_to_page = move |_| {
         let selected_value = tab_value.get();
@@ -66,15 +80,15 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href="/pkg/dl_reddit.css" />
-        <Title text="Downloader" />
+        <Title text="Rusty Pickle" />
 
         <Router>
-            <main>
+            {set_tab_value()} <main>
                 <ConfigProvider theme>
                     <div class="flex justify-center item-center mt-1 bg-gray-100">
                         <TabList
                             selected_value=tab_value
-                            class="min-w-72 bg-white justify-center item-center flex rounded-lg"
+                            class="min-w-72 mb-8 bg-white justify-center item-center flex rounded-lg"
                         >
                             <Tab value="home" on:click=navigate_to_page>
                                 "Home"
@@ -95,7 +109,7 @@ pub fn App() -> impl IntoView {
                             <Route path=StaticSegment("") view=ToHomePage />
                             <Route path=StaticSegment("/home") view=NotFound />
                             <Route path=StaticSegment("/reddit") view=RedditDL />
-                            <Route path=StaticSegment("/repo") view=TestPage />
+                            <Route path=StaticSegment("/repo") view=RepoDL />
                             <Route path=StaticSegment("/about") view=NotFound />
                             <Route path=WildcardSegment("any") view=NotFound />
                         </Routes>
@@ -114,7 +128,10 @@ fn NotFound() -> impl IntoView {
         resp.set_status(actix_web::http::StatusCode::NOT_FOUND);
     }
 
-    view! { <div class="text-2xl pt-5 justify-center item-center flex">"Not Found"</div> }
+    view! {
+        <Title text="Not Found | Rusty Pickle" />
+        <div class="text-2xl pt-5 justify-center item-center flex">"Not Found"</div>
+    }
 }
 
 #[component]

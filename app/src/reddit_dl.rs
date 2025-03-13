@@ -1,8 +1,10 @@
 use api::reddit_downloader;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
-use shared::{extract_reddit_id, DlType, DownloadData, DownloadMetadata, Downloads};
-use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix};
+use leptos_meta::Title;
+use shared::extract_reddit_id;
+use shared::models::{DlType, DownloadData, DownloadMetadata, Downloads};
+use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize};
 
 use crate::utils::create_blob_url;
 
@@ -13,13 +15,12 @@ pub fn RedditDL() -> impl IntoView {
     let (downloadables, set_downloadables) = signal(None);
     let (error_resp, set_error) = signal(String::new());
 
-    let fetch_downloads = move |_| {
-        let link_to_use = link.get().clone();
+    let fetch_downloads = move |post_id| {
         set_downloadables.set(None);
         set_error.set(String::new());
         set_loading.set(true);
         spawn_local(async move {
-            let result = reddit_downloader(link_to_use).await;
+            let result = reddit_downloader(post_id).await;
 
             match result {
                 Ok(downloadables) => set_downloadables.set(Some(downloadables)),
@@ -29,9 +30,9 @@ pub fn RedditDL() -> impl IntoView {
         });
     };
 
-    let valid_reddit_link = move |m| {
-        if extract_reddit_id(&link.get()).is_some() {
-            fetch_downloads(m)
+    let valid_reddit_link = move |_| {
+        if let Some(post_id) = extract_reddit_id(&link.get()) {
+            fetch_downloads(post_id.to_string())
         } else {
             set_error.set(String::from("No valid reddit link was found."));
         }
@@ -51,18 +52,21 @@ pub fn RedditDL() -> impl IntoView {
     };
 
     view! {
-        <div class="flex items-center justify-center p-12">
+        <Title text="Reddit D/L | Rusty Pickle" />
+
+        <div class="flex items-center justify-center px-2">
             <Card class="!gap-0 w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 !rounded-lg">
                 <h4 class="text-xl font-semibold text-gray-700 mb-2 flex item-center justify-center">
-                    "Reddit Downloader"
+                    "Reddit Post Downloader"
                 </h4>
                 <Input
                     class="w-full p-2"
                     placeholder="https://reddit.com/r/subreddit/comments/1234/post-details/"
                     value=link
+                    size=InputSize::Medium
                 >
                     <InputPrefix slot>
-                        <Icon icon=icondata::AiLinkOutlined />
+                        <Icon icon=icondata::AiRedditOutlined />
                     </InputPrefix>
                 </Input>
 
@@ -192,12 +196,10 @@ fn render_image(item: DownloadData) -> impl IntoView {
 
         <p class="mt-2 text-gray-700 text-sm text-center">{filename.clone()}</p>
 
-        <a
-            class="w-full bg-n-blue hover:bg-h-blue rounded-full text-white font-semibold py-2 transition duration-300 flex items-center justify-center"
-            href=url
-            download=filename
-        >
-            "Download"
+        <a class="py-2 flex items-center justify-center" href=url download=filename>
+            <Button appearance=ButtonAppearance::Primary shape=ButtonShape::Circular class="w-full">
+                "Download"
+            </Button>
         </a>
     }
 }
@@ -207,12 +209,10 @@ fn video_download_button(item: DownloadMetadata, url: String) -> impl IntoView {
     let filename = format!("{}.{}", item.file_name, item.extension);
     let resolution = format!("{}x{}", item.sizing.width, item.sizing.height);
     view! {
-        <a
-            class="w-full bg-n-blue hover:bg-h-blue text-white font-semibold py-2 rounded-full transition duration-300 flex items-center justify-center"
-            href=url
-            download=filename
-        >
-            {resolution}
+        <a class="w-full py-2 flex items-center justify-center" href=url download=filename>
+            <Button appearance=ButtonAppearance::Primary shape=ButtonShape::Circular class="w-full">
+                {resolution}
+            </Button>
         </a>
     }
 }
