@@ -1,16 +1,16 @@
+use actix_files::Files;
+use actix_web::*;
+use app::App;
+use dev::Service;
+use leptos::config::get_configuration;
+use leptos::prelude::*;
+use leptos_actix::{generate_route_list, LeptosRoutes};
+use leptos_meta::MetaTags;
+use log::{info, LevelFilter};
+use std::env::var;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use actix_files::Files;
-    use actix_web::*;
-    use app::App;
-    use dev::Service;
-    use leptos::config::get_configuration;
-    use leptos::prelude::*;
-    use leptos_actix::{generate_route_list, LeptosRoutes};
-    use leptos_meta::MetaTags;
-    use log::{info, LevelFilter};
-    use std::env::var;
-
     dotenvy::dotenv().ok();
 
     pretty_env_logger::formatted_timed_builder()
@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
         .and_then(|p| p.parse::<u16>().ok())
         .unwrap_or(8080);
 
-    let address = var("ADDRESS").unwrap_or("127.0.0.1".to_string());
+    let address = var("ADDRESS").unwrap_or("0.0.0.0".to_string());
 
     let addr = format!("{address}:{port}");
     let addr_clone = addr.clone();
