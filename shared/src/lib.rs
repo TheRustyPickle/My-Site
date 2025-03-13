@@ -1,29 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct Downloads {
-    pub download_type: DlType,
-    pub data: Vec<DownloadData>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub enum DlType {
-    Image,
-    Video,
-}
-
-#[derive(Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct DownloadData {
-    pub metadata: DownloadMetadata,
-    pub content: Vec<u8>,
-}
-
-#[derive(Serialize, Default, Deserialize, Clone, Eq, PartialEq)]
-pub struct VideoSize {
-    pub height: u64,
-    pub width: u64,
-    pub highest_quality: bool,
-}
+pub mod models;
 
 pub fn extract_reddit_id(url: &str) -> Option<&str> {
     if !url.contains("reddit.com/r/") {
@@ -35,9 +10,21 @@ pub fn extract_reddit_id(url: &str) -> Option<&str> {
     parts.get(index + 1).copied()
 }
 
-#[derive(Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub struct DownloadMetadata {
-    pub file_name: String,
-    pub extension: String,
-    pub sizing: VideoSize,
+pub fn extract_github_info(url: &str) -> Option<(String, String)> {
+    let prefix = "github.com/";
+
+    let start = url.find(prefix)? + prefix.len();
+
+    let path = &url[start..];
+
+    let mut parts = path.split('/');
+
+    let username = parts.next()?.to_string();
+    let repository = parts.next()?.to_string();
+
+    if username.is_empty() || repository.is_empty() {
+        return None;
+    }
+
+    Some((username, repository))
 }
