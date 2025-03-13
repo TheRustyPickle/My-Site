@@ -1,19 +1,32 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
+use log::error;
 use octocrab::Octocrab;
 use shared::models::{ReleaseAsset, ReleaseInfo, RepoReleasesSummary};
 
 pub async fn get_release_data(username: String, repo: String) -> Result<RepoReleasesSummary> {
     let octocrab = Octocrab::builder().build()?;
 
-    let releases = octocrab
-        .repos(username, repo)
+    let mut releases = Vec::new();
+    let mut page = octocrab
+        .repos(&username, &repo)
         .releases()
         .list()
         .send()
         .await
-        .map_err(|_| {
+        .map_err(|e| {
+            error!("Failed to get repository info for {username}/{repo}. Error: {e}");
             anyhow!("Failed to get release data from the repository. Does the repository exist?")
         })?;
+
+    while let Some(next_page) = octocrab.get_page(&page.next).await.map_err(|e| {
+        error!("Failed to get repository info for {username}/{repo} during pagination. Error: {e}");
+        anyhow!("Failed to get release data from the repository. Reason: {e}")
+    })? {
+        releases.extend(page.items);
+        page = next_page;
+    }
+
+    releases.extend(page.items);
 
     let mut all_releases = Vec::new();
     let mut total_downloads = 0;
