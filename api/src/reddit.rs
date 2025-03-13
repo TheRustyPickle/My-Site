@@ -1,16 +1,15 @@
 use anyhow::{anyhow, Result};
-use dash_mpd::{fetch::DashDownloader, parse, MPD};
+use dash_mpd::fetch::DashDownloader;
+use dash_mpd::{parse, MPD};
 use log::info;
 use reqwest::Client;
 use roux::Reddit;
-use shared::{extract_reddit_id, DlType, DownloadData, DownloadMetadata, Downloads, VideoSize};
-use std::{env::var, fs};
+use shared::extract_reddit_id;
+use shared::models::{DlType, DownloadData, DownloadMetadata, Downloads, VideoSize};
+use std::env::var;
+use std::fs;
 
-pub async fn get_reddit_url(url: &str) -> Result<Downloads> {
-    let Some(post_id) = extract_reddit_id(url) else {
-        return Err(anyhow!("No reddit url was found in the given url"));
-    };
-
+pub async fn get_reddit_url(post_id: &str) -> Result<Downloads> {
     let username = var("USERNAME").unwrap();
     let password = var("PASSWORD").unwrap();
     let client_id = var("CLIENT_TOKEN").unwrap();

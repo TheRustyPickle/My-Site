@@ -1,18 +1,39 @@
-use leptos::{prelude::ServerFnError, server};
-use shared::Downloads;
+use leptos::prelude::ServerFnError;
+use leptos::server;
+use shared::models::{Downloads, RepoReleasesSummary};
 
 #[cfg(feature = "ssr")]
 pub mod reddit;
 
+#[cfg(feature = "ssr")]
+pub mod github;
+
 #[server]
-pub async fn reddit_downloader(input: String) -> Result<Downloads, ServerFnError> {
+pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnError> {
     use crate::reddit::get_reddit_url;
     use log::error;
 
-    match get_reddit_url(&input).await {
+    match get_reddit_url(&post_id).await {
         Ok(data) => Ok(data),
         Err(e) => {
             error!("Failed to download reddit data. Reason: {e}");
+            Err(ServerFnError::new(e))
+        }
+    }
+}
+
+#[server]
+pub async fn github_checker(
+    username: String,
+    repo_link: String,
+) -> Result<RepoReleasesSummary, ServerFnError> {
+    use crate::github::get_release_data;
+    use log::error;
+
+    match get_release_data(username, repo_link).await {
+        Ok(data) => Ok(data),
+        Err(e) => {
+            error!("Failed to get repo release summary. Reason: {e}");
             Err(ServerFnError::new(e))
         }
     }
