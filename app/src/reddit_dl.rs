@@ -30,7 +30,7 @@ pub fn RedditDL() -> impl IntoView {
         });
     };
 
-    let valid_reddit_link = move |_| {
+    let valid_reddit_link = move || {
         if let Some(post_id) = extract_reddit_id(&link.get()) {
             fetch_downloads(post_id.to_string())
         } else {
@@ -63,10 +63,16 @@ pub fn RedditDL() -> impl IntoView {
                     class="w-full p-2"
                     placeholder="https://reddit.com/r/subreddit/comments/1234/post-details/"
                     value=link
-                    size=InputSize::Medium
+                    size=InputSize::Large
+                    on:keypress=move |e| {
+                        if e.char_code() == 13 {
+                            valid_reddit_link()
+                        }
+                    }
                 >
+
                     <InputPrefix slot>
-                        <Icon icon=icondata::AiRedditOutlined />
+                        <Icon icon=icondata::BsReddit />
                     </InputPrefix>
                 </Input>
 
@@ -74,9 +80,8 @@ pub fn RedditDL() -> impl IntoView {
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
                     class="mt-2 w-full !text-white font-semibold"
-                    on_click=valid_reddit_link
+                    on_click=move |_| valid_reddit_link()
                     loading
-                    disabled=loading
                 >
                     {move || download_button_text()}
                 </Button>

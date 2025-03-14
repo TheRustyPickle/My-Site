@@ -1,7 +1,7 @@
 use icondata::Icon;
 use leptos::prelude::*;
 use leptos_meta::Title;
-use thaw::{Avatar, Button, ButtonAppearance, ButtonShape, Card};
+use thaw::{Button, ButtonAppearance, ButtonShape, ButtonSize, Card};
 
 #[derive(Clone)]
 struct Social {
@@ -34,15 +34,33 @@ pub fn About() -> impl IntoView {
             link: "mailto:rusty.pickle94@gmail.com".to_string(),
         },
     ];
+
+    let p_1 = "I'm a hobbyist programmer who enjoys building projects that I find useful.";
+
+    let p_2 = "My background is in marketing, but programming has been a big part of what I do, \
+        whether through personal projects or small tools I've made along the way.";
+
+    let p_3 = "I love experimenting with new technologies and hope to transition into software development in the future. \
+        While I've worked with various languages, Rust has been my favorite for its reliability and performance.";
+
+    let p_4 = "For now, I just keep building things and having fun with it. I'm always up for a chat about programming, \
+        open-source, or whatever interesting project \
+        you're working on—feel free to reach out!";
+
     view! {
         <Title text="About | Rusty Pickle" />
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 p-4 w-full max-w-4xl mx-auto p-10">
+        <div class="flex flex-col gap-2 p-4 w-full p-10">
 
-            <Card class="w-full md:w-1/2 p-6 flex flex-col items-center bg-white rounded-lg shadow-md min-h-61">
-                <p class="font-bold text-3xl">Contact</p>
-                <Avatar src="https://avatars.githubusercontent.com/u/35862475?v=4" size=96 />
+            <Card class="w-full bg-white !rounded-lg flex !gap-2 flex-col text-center">
+                <h2 class="text-2xl font-bold text-gray-800">"About Me"</h2>
+                <p class="mt-2 text-gray-600 text-lg">{p_1}</p>
+                <p class="mt-2 text-gray-600 text-lg">{p_2}</p>
+                <p class="mt-2 text-gray-600 text-lg">{p_3}</p>
+                <p class="mt-2 text-gray-600 text-lg">{p_4}</p>
+            </Card>
 
-                <div class="flex flex-wrap justify-center item-center">
+            <Card class="w-full flex flex-col bg-white !rounded-lg">
+                <div class="flex flex-wrap justify-center">
                     <For
                         each=move || social_buttons.clone()
                         key=|social| social.name.clone()
@@ -53,6 +71,7 @@ pub fn About() -> impl IntoView {
                                         icon=social.icon
                                         shape=ButtonShape::Rounded
                                         appearance=ButtonAppearance::Transparent
+                                        size=ButtonSize::Large
                                         class="!transition-all !duration-200 hover:scale-105 relative hover:z-10"
                                     >
                                         {social.name.clone()}
@@ -62,14 +81,6 @@ pub fn About() -> impl IntoView {
                         }
                     />
                 </div>
-            </Card>
-
-            <Card class="w-full md:w-1/2 bg-white rounded-lg shadow-md flex flex-col justify-center item-center text-center min-h-61">
-                <h2 class="text-2xl font-bold text-gray-800">"About Me"</h2>
-                <p class="mt-2 text-gray-600 text-lg">
-                    "I'm a Rust developer passionate about building efficient and scalable applications.
-                    I love open-source projects and enjoy experimenting with new technologies."
-                </p>
             </Card>
         </div>
     }

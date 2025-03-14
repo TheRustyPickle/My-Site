@@ -47,7 +47,7 @@ pub fn RepoDL() -> impl IntoView {
         });
     };
 
-    let valid_github_link = move |_| {
+    let valid_github_link = move || {
         if let Some((username, repo)) = extract_github_info(&link.get()) {
             get_release_status(username, repo)
         } else {
@@ -68,7 +68,12 @@ pub fn RepoDL() -> impl IntoView {
                     class="w-full p-2"
                     placeholder="https://github.com/user/repository"
                     value=link
-                    size=InputSize::Medium
+                    size=InputSize::Large
+                    on:keypress=move |e| {
+                        if e.char_code() == 13 {
+                            valid_github_link()
+                        }
+                    }
                 >
                     <InputPrefix slot>
                         <Icon icon=icondata::AiGithubOutlined />
@@ -79,9 +84,8 @@ pub fn RepoDL() -> impl IntoView {
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
                     class="mt-2 w-full !text-white font-semibold"
-                    on_click=valid_github_link
+                    on_click=move |_| valid_github_link()
                     loading
-                    disabled=loading
                 >
                     {move || content_button_text()}
                 </Button>
