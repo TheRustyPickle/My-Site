@@ -1,16 +1,19 @@
+mod about;
+mod projects;
 mod reddit_dl;
 mod repo_dl;
 mod utils;
 
-use std::collections::HashMap;
-
+use about::About;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
 use leptos_router::{StaticSegment, WildcardSegment};
+use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;
+use std::collections::HashMap;
 use thaw::{ConfigProvider, Tab, TabList, Theme};
 
 #[component]
@@ -54,16 +57,16 @@ pub fn App() -> impl IntoView {
                 "/reddit" => "reddit".to_string(),
                 "/repo" => "repo".to_string(),
                 "/about" => "about".to_string(),
-                "/" | "/home" => "home".to_string(),
-                _ => "home".to_string(),
+                "/" | "/projects" => "projects".to_string(),
+                _ => "projects".to_string(),
             });
         }
     };
 
     let navigate_to_page = move |_| {
         let selected_value = tab_value.get();
-        let value_path = if selected_value == "home" {
-            "/home"
+        let value_path = if selected_value == "projects" {
+            "/projects"
         } else if selected_value == "reddit" {
             "/reddit"
         } else if selected_value == "repo" {
@@ -90,8 +93,8 @@ pub fn App() -> impl IntoView {
                             selected_value=tab_value
                             class="min-w-72 mb-8 bg-white justify-center item-center flex rounded-lg"
                         >
-                            <Tab value="home" on:click=navigate_to_page>
-                                "Home"
+                            <Tab value="projects" on:click=navigate_to_page>
+                                "Projects"
                             </Tab>
                             <Tab value="reddit" on:click=navigate_to_page>
                                 "Reddit D/L"
@@ -106,11 +109,11 @@ pub fn App() -> impl IntoView {
                     </div>
                     <div class="bg-gray-100">
                         <Routes fallback=move || "Not found.">
-                            <Route path=StaticSegment("") view=ToHomePage />
-                            <Route path=StaticSegment("/home") view=NotFound />
+                            <Route path=StaticSegment("") view=ToProjectPage />
+                            <Route path=StaticSegment("/projects") view=Projects />
                             <Route path=StaticSegment("/reddit") view=RedditDL />
                             <Route path=StaticSegment("/repo") view=RepoDL />
-                            <Route path=StaticSegment("/about") view=NotFound />
+                            <Route path=StaticSegment("/about") view=About />
                             <Route path=WildcardSegment("any") view=NotFound />
                         </Routes>
                     </div>
@@ -135,10 +138,10 @@ fn NotFound() -> impl IntoView {
 }
 
 #[component]
-fn ToHomePage() {
+fn ToProjectPage() {
     let navigate = use_navigate();
 
     Effect::new(move |_| {
-        navigate("/home", Default::default());
+        navigate("/projects", Default::default());
     });
 }

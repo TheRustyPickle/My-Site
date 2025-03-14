@@ -1,5 +1,6 @@
 use api::github_checker;
-use leptos::{prelude::*, task::spawn_local};
+use leptos::prelude::*;
+use leptos::task::spawn_local;
 use leptos_meta::Title;
 use shared::{
     extract_github_info,
@@ -32,6 +33,7 @@ pub fn RepoDL() -> impl IntoView {
         set_error.set(String::new());
         set_loading.set(true);
         set_release_summary.set(None);
+
         spawn_local(async move {
             let result = github_checker(username, repo).await;
 
@@ -122,7 +124,9 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
                     <Card class=card_class>
                         <h3 class="text-lg font-semibold">"Most Downloaded Release"</h3>
                         <p class="text-xl font-bold">{release.tag.clone()}</p>
-                        <p class="text-lg">"Downloads: " {release.total_downloads.separate_with_commas()}</p>
+                        <p class="text-lg">
+                            "Downloads: " {release.total_downloads.separate_with_commas()}
+                        </p>
                     </Card>
                 </a>
             }
@@ -176,7 +180,9 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
             <div class="px-2 flex flex-col justify-center gap-2 ">
                 <Card class=card_class>
                     <h3 class="text-lg font-semibold">"Total Downloads"</h3>
-                    <p class="text-2xl font-bold">{release_summary.total_downloads.separate_with_commas()}</p>
+                    <p class="text-2xl font-bold">
+                        {release_summary.total_downloads.separate_with_commas()}
+                    </p>
                 </Card>
 
                 {show_most_downloaded(release_summary.most_downloaded_release.clone())}
