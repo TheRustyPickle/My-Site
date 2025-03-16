@@ -19,7 +19,7 @@ console_log = "1"
 
 
 [[workspace.metadata.leptos]]
-name = "dl_reddit"
+name = "my_site"
 bin-package = "server"
 lib-package = "frontend"
 

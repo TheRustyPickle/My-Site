@@ -82,7 +82,7 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/dl_reddit.css" />
+        <Stylesheet id="leptos" href="/pkg/my_site.css" />
         <Title text="Rusty Pickle" />
 
         <Router>
