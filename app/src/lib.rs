@@ -1,3 +1,4 @@
+mod test;
 mod about;
 mod projects;
 mod reddit_dl;
@@ -5,6 +6,7 @@ mod repo_dl;
 mod utils;
 
 use about::About;
+use test::TestPage;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use leptos_router::components::{Route, Router, Routes};
@@ -72,7 +74,7 @@ pub fn App() -> impl IntoView {
         } else if selected_value == "repo" {
             "/repo"
         } else if selected_value == "about" {
-            "/about"
+            "/test"
         } else {
             "/not_found"
         };
@@ -114,6 +116,7 @@ pub fn App() -> impl IntoView {
                             <Route path=StaticSegment("/reddit") view=RedditDL />
                             <Route path=StaticSegment("/repo") view=RepoDL />
                             <Route path=StaticSegment("/about") view=About />
+                            <Route path=StaticSegment("/test") view=TestPage />
                             <Route path=WildcardSegment("any") view=NotFound />
                         </Routes>
                     </div>

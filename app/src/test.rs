@@ -151,197 +151,199 @@ fn Carousel() -> impl IntoView {
     };
 
     view! {
-        <div class="flex flex-col items-center w-full max-w-2xl mx-auto">
-            // CSS for animations
-            <style>
-                {".carousel-container {
-                width: 100%;
-                overflow: hidden;
-                position: relative;
-                height: 400px;
-                }
-                .carousel-track {
-                display: flex;
-                width: 200%;
-                height: 100%;
-                position: relative;
-                transition: transform 0.5s ease;
-                }
-                .carousel-slide {
-                width: 50%;
-                height: 100%;
-                flex-shrink: 0;
-                }
-                /* No animation state */
-                .slide-none .carousel-track {
-                transform: translateX(0);
-                }
-                /* Next slide animation - current slides left, next appears from right */
-                .slide-next .carousel-track {
-                transform: translateX(-50%);
-                }
-                /* Previous slide animation - current slides right, prev appears from left */
-                .slide-prev .carousel-track {
-                transform: translateX(0);
-                }
-                /* Init state for prev animation */
-                .init-prev .carousel-track {
-                transform: translateX(-50%);
-                transition: none;
-                }
-                /* Reset after animation completes */
-                .slide-reset .carousel-track {
-                transition: none;
-                transform: translateX(0);
-                }"}
-            </style>
+        <div class="flex">
+            <div class="flex flex-col max-w-2xl mx-auto">
+                // CSS for animations
+                <style>
+                    {".carousel-container {
+                    width: 100%;
+                    overflow: hidden;
+                    position: relative;
+                    height: 400px;
+                    }
+                    .carousel-track {
+                    display: flex;
+                    width: 200%;
+                    height: 100%;
+                    position: relative;
+                    transition: transform 0.5s ease;
+                    }
+                    .carousel-slide {
+                    width: 50%;
+                    height: 100%;
+                    flex-shrink: 0;
+                    }
+                    /* No animation state */
+                    .slide-none .carousel-track {
+                    transform: translateX(0);
+                    }
+                    /* Next slide animation - current slides left, next appears from right */
+                    .slide-next .carousel-track {
+                    transform: translateX(-50%);
+                    }
+                    /* Previous slide animation - current slides right, prev appears from left */
+                    .slide-prev .carousel-track {
+                    transform: translateX(0);
+                    }
+                    /* Init state for prev animation */
+                    .init-prev .carousel-track {
+                    transform: translateX(-50%);
+                    transition: none;
+                    }
+                    /* Reset after animation completes */
+                    .slide-reset .carousel-track {
+                    transition: none;
+                    transform: translateX(0);
+                    }"}
+                </style>
 
-            <div class="relative w-full overflow-hidden rounded-lg shadow-lg">
-                // Carousel container with animation classes
-                <div
-                    class="carousel-container"
-                    class:slide-next=move || slide_direction.get() == "next"
-                    class:slide-prev=move || slide_direction.get() == "prev"
-                    class:slide-none=move || slide_direction.get() == "none"
-                    class:slide-reset=move || slide_direction.get() == "reset"
-                    class:init-prev=move || slide_direction.get() == "init-prev"
-                >
-                    // Track that contains both slides
-                    <div class="carousel-track">
-                        {move || {
-                            let curr = current_index.get();
-                            let next = next_index.get();
-                            let direction = slide_direction.get();
-                            match direction {
-                                "next" => {
-                                    view! {
-                                        // Current slide on the left
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr]
-                                                alt=format!("Image {}", curr + 1)
-                                                class="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        // Next slide on the right
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[next]
-                                                alt=format!("Image {}", next + 1)
-                                                class="w-full h-full object-cover"
-                                            />
-                                        </div>
+                <div class="relative w-full overflow-hidden rounded-lg shadow-lg">
+                    // Carousel container with animation classes
+                    <div
+                        class="carousel-container"
+                        class:slide-next=move || slide_direction.get() == "next"
+                        class:slide-prev=move || slide_direction.get() == "prev"
+                        class:slide-none=move || slide_direction.get() == "none"
+                        class:slide-reset=move || slide_direction.get() == "reset"
+                        class:init-prev=move || slide_direction.get() == "init-prev"
+                    >
+                        // Track that contains both slides
+                        <div class="carousel-track">
+                            {move || {
+                                let curr = current_index.get();
+                                let next = next_index.get();
+                                let direction = slide_direction.get();
+                                match direction {
+                                    "next" => {
+                                        view! {
+                                            // Current slide on the left
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr]
+                                                    alt=format!("Image {}", curr + 1)
+                                                    class="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            // Next slide on the right
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[next]
+                                                    alt=format!("Image {}", next + 1)
+                                                    class="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
-                                }
-                                "prev" | "init-prev" => {
-                                    view! {
-                                        // Previous slide on the left
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[next]
-                                                alt=format!("Image {}", next + 1)
-                                                class="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        // Current slide on the right
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr]
-                                                alt=format!("Image {}", curr + 1)
-                                                class="w-full h-full object-cover"
-                                            />
-                                        </div>
+                                    "prev" | "init-prev" => {
+                                        view! {
+                                            // Previous slide on the left
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[next]
+                                                    alt=format!("Image {}", next + 1)
+                                                    class="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            // Current slide on the right
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr]
+                                                    alt=format!("Image {}", curr + 1)
+                                                    class="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
-                                }
-                                _ => {
-                                    view! {
-                                        // Only current slide visible
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr]
-                                                alt=format!("Image {}", curr + 1)
-                                                class="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div class="carousel-slide"></div>
+                                    _ => {
+                                        view! {
+                                            // Only current slide visible
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr]
+                                                    alt=format!("Image {}", curr + 1)
+                                                    class="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div class="carousel-slide"></div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
                                 }
-                            }
-                        }}
+                            }}
+                        </div>
                     </div>
-                </div>
 
-                // Navigation arrows
-                <div class="absolute inset-0 flex items-center justify-between p-4 z-10">
-                    <button
-                        on:click=prev
-                        class="bg-white bg-opacity-50 p-2 rounded-full shadow hover:bg-opacity-75 focus:outline-none transition-all duration-200"
-                        class:opacity-50=move || is_animating.get()
-                        class:cursor-not-allowed=move || is_animating.get()
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                    // Navigation arrows
+                    <div class="absolute inset-0 flex items-center justify-between p-4 z-10">
+                        <button
+                            on:click=prev
+                            class="bg-white bg-opacity-50 p-2 rounded-full shadow hover:bg-opacity-75 focus:outline-none transition-all duration-200"
+                            class:opacity-50=move || is_animating.get()
+                            class:cursor-not-allowed=move || is_animating.get()
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                    </button>
-
-                    <button
-                        on:click=next
-                        class="bg-white bg-opacity-50 p-2 rounded-full shadow hover:bg-opacity-75 focus:outline-none transition-all duration-200"
-                        class:opacity-50=move || is_animating.get()
-                        class:cursor-not-allowed=move || is_animating.get()
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            />
-                        </svg>
-                    </button>
-                </div>
-
-            </div>
-
-            // Image indicators
-
-            <div class="flex mt-4 mb-4 flex-row justify-center gap-2">
-                {(0..total_images)
-                    .map(|idx| {
-                        view! {
-                            <Button
-                                on:click=move |_| go_to_image(idx)
-                                class=carousel_button_class(idx)
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
                             >
-                                {idx + 1}
-                            </Button>
-                        }
-                    })
-                    .collect::<Vec<_>>()}
-            </div>
-            // Counter display
-            <div class="mt-2 text-sm text-gray-600">
-                {move || format!("Image {} of {}", current_index.get() + 1, total_images)}
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 19l-7-7 7-7"
+                                />
+                            </svg>
+                        </button>
+
+                        <button
+                            on:click=next
+                            class="bg-white bg-opacity-50 p-2 rounded-full shadow hover:bg-opacity-75 focus:outline-none transition-all duration-200"
+                            class:opacity-50=move || is_animating.get()
+                            class:cursor-not-allowed=move || is_animating.get()
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+
+                // Image indicators
+
+                <div class="flex mt-4 mb-4 flex-row justify-center gap-2">
+                    {(0..total_images)
+                        .map(|idx| {
+                            view! {
+                                <Button
+                                    on:click=move |_| go_to_image(idx)
+                                    class=carousel_button_class(idx)
+                                >
+                                    {idx + 1}
+                                </Button>
+                            }
+                        })
+                        .collect::<Vec<_>>()}
+                </div>
+                // Counter display
+                <div class="mt-2 text-sm text-gray-600">
+                    {move || format!("Image {} of {}", current_index.get() + 1, total_images)}
+                </div>
             </div>
         </div>
     }
