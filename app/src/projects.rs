@@ -274,6 +274,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     height: 300px;
                     margin: 0 auto;
                     }
+                    
                     .carousel-root .carousel-track {
                     display: flex;
                     width: 200%;
@@ -281,6 +282,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     position: relative;
                     transition: transform 0.5s ease;
                     }
+                    
                     .carousel-root .carousel-slide {
                     width: 50%;
                     height: 100%;
@@ -289,6 +291,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     justify-content: center;
                     align-items: center;
                     }
+                    
                     .carousel-root .carousel-slide img {
                     max-width: 100%;
                     max-height: 100%;
@@ -298,33 +301,45 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     transition: transform 0.3s ease;
                     cursor: zoom-in;
                     }
+                    
                     .carousel-root .carousel-slide img.zoomed {
                     transform: scale(1.5);
                     cursor: zoom-out;
                     }
+                    
+                    .carousel-root .carousel-slide img:hover {
+                    transform: scale(1.1);
+                    }
+                    
                     .carousel-root .slide-none .carousel-track {
                     transform: translateX(0);
                     }
+                    
                     .carousel-root .slide-next .carousel-track {
                     transform: translateX(-50%);
                     }
+                    
                     .carousel-root .slide-prev .carousel-track {
                     transform: translateX(0);
                     }
+                    
                     .carousel-root .init-prev .carousel-track {
                     transform: translateX(-50%);
                     transition: none;
                     }
+                    
                     .carousel-root .slide-reset .carousel-track {
                     transition: none;
                     transform: translateX(0);
                     }
+                    
                     .carousel-root .image-counter {
                     margin-top: 0.5rem;
                     text-align: center;
                     font-size: 0.875rem;
                     color: #6b7280;
                     }
+                    
                     .carousel-root .zoom-overlay {
                     position: fixed;
                     top: 0;
@@ -337,6 +352,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     justify-content: center;
                     align-items: center;
                     }
+                    
                     .carousel-root .zoom-overlay img {
                     max-width: 90%;
                     max-height: 90%;
@@ -444,28 +460,28 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                 </div>
 
                 <Show when=move || { total_images > 1 && !is_zoomed.get() }>
-                    <div class="">
+                    <div class="flex justify-center items-center gap-6 mt-4">
                         <Button
                             on:click=prev
                             disabled=is_animating
                             shape=ButtonShape::Circular
                             icon=icondata::FaChevronLeftSolid
-                            class="opacity-50 absolute left-0 top-1/2 transform -translate-y-1/2 ml-1"
+                            class="opacity-80 hover:opacity-100 transition-opacity"
                         />
+
+                        <div class="image-counter font-medium">
+                            {move || {
+                                format!("Image {} of {}", current_index.get() + 1, total_images)
+                            }}
+                        </div>
 
                         <Button
                             on:click=next
                             shape=ButtonShape::Circular
                             disabled=is_animating
                             icon=icondata::FaChevronRightSolid
-                            class="opacity-50 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
+                            class="opacity-80 hover:opacity-100 transition-opacity"
                         />
-                    </div>
-                </Show>
-
-                <Show when=move || !is_zoomed.get()>
-                    <div class="image-counter">
-                        {move || format!("Image {} of {}", current_index.get() + 1, total_images)}
                     </div>
                 </Show>
 
