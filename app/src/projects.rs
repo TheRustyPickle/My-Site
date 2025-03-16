@@ -191,6 +191,8 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
     let (next_index, set_next_index) = signal(0);
     let is_animating = RwSignal::new(false);
     let (slide_direction, set_slide_direction) = signal("none");
+    // Add a zoom state signal
+    let (is_zoomed, set_is_zoomed) = signal(false);
 
     let total_images = images.len();
 
@@ -210,7 +212,8 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
 
     // Move to next image
     let next = move |_| {
-        if is_animating.get() {
+        // Don't allow navigation while zoomed or animating
+        if is_animating.get() || is_zoomed.get() {
             return;
         }
 
@@ -223,7 +226,8 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
     };
 
     let prev = move |_| {
-        if is_animating.get() {
+        // Don't allow navigation while zoomed or animating
+        if is_animating.get() || is_zoomed.get() {
             return;
         }
 
@@ -248,10 +252,18 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
         set_timeout(reset_animation, std::time::Duration::from_millis(520));
     };
 
+    // Toggle zoom handler
+    let toggle_zoom = move |_| {
+        // Don't allow zoom while animating
+        if !is_animating.get() {
+            set_is_zoomed.update(|zoomed| *zoomed = !*zoomed);
+        }
+    };
+
     view! {
         <div class="flex w-full w-3xl flex-1 justify-center item-center">
 
-            <div class="carousel-root w-full ">
+            <div class="carousel-root w-full">
                 // CSS for animations - scoped with unique class name
                 <style>
                     {".carousel-root .carousel-container {
@@ -283,6 +295,12 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
+                    transition: transform 0.3s ease;
+                    cursor: zoom-in;
+                    }
+                    .carousel-root .carousel-slide img.zoomed {
+                    transform: scale(1.5);
+                    cursor: zoom-out;
                     }
                     .carousel-root .slide-none .carousel-track {
                     transform: translateX(0);
@@ -306,12 +324,30 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     text-align: center;
                     font-size: 0.875rem;
                     color: #6b7280;
+                    }
+                    .carousel-root .zoom-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.75);
+                    z-index: 20;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    }
+                    .carousel-root .zoom-overlay img {
+                    max-width: 90%;
+                    max-height: 90%;
+                    object-fit: contain;
+                    cursor: zoom-out;
                     }"}
                 </style>
 
                 // Carousel main container
                 <div
-                    class="carousel-container "
+                    class="carousel-container"
                     class:slide-next=move || slide_direction.get() == "next"
                     class:slide-prev=move || slide_direction.get() == "prev"
                     class:slide-none=move || slide_direction.get() == "none"
@@ -320,92 +356,119 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                 >
                     // Track containing slides
                     <div class="carousel-track">
-                        {move || {
-                            let curr = current_index.get();
-                            let next = next_index.get();
-                            let direction = slide_direction.get();
-                            match direction {
-                                "next" => {
-                                    view! {
-                                        // Current slide on the left
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr].clone()
-                                                alt=format!("Image {}", curr + 1)
-                                            />
-                                        </div>
-                                        // Next slide on the right
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[next].clone()
-                                                alt=format!("Image {}", next + 1)
-                                            />
-                                        </div>
+                        {
+                            let images = images.clone();
+                            move || {
+                                let curr = current_index.get();
+                                let next = next_index.get();
+                                let direction = slide_direction.get();
+                                let zoomed = is_zoomed.get();
+                                match direction {
+                                    "next" => {
+                                        view! {
+                                            // Current slide on the left
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr].clone()
+                                                    alt=format!("Image {}", curr + 1)
+                                                    on:click=toggle_zoom
+                                                    class:zoomed=zoomed
+                                                />
+                                            </div>
+                                            // Next slide on the right
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[next].clone()
+                                                    alt=format!("Image {}", next + 1)
+                                                    on:click=toggle_zoom
+                                                    class:zoomed=zoomed
+                                                />
+                                            </div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
-                                }
-                                "prev" | "init-prev" => {
-                                    view! {
-                                        // Previous slide on the left
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[next].clone()
-                                                alt=format!("Image {}", next + 1)
-                                            />
-                                        </div>
-                                        // Current slide on the right
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr].clone()
-                                                alt=format!("Image {}", curr + 1)
-                                            />
-                                        </div>
+                                    "prev" | "init-prev" => {
+                                        view! {
+                                            // Previous slide on the left
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[next].clone()
+                                                    alt=format!("Image {}", next + 1)
+                                                    on:click=toggle_zoom
+                                                    class:zoomed=zoomed
+                                                />
+                                            </div>
+                                            // Current slide on the right
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr].clone()
+                                                    alt=format!("Image {}", curr + 1)
+                                                    on:click=toggle_zoom
+                                                    class:zoomed=zoomed
+                                                />
+                                            </div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
-                                }
-                                _ => {
-                                    view! {
-                                        // Only current slide visible
-                                        <div class="carousel-slide">
-                                            <img
-                                                src=images[curr].clone()
-                                                alt=format!("Image {}", curr + 1)
-                                            />
-                                        </div>
-                                        <div class="carousel-slide"></div>
+                                    _ => {
+                                        view! {
+                                            // Only current slide visible
+                                            <div class="carousel-slide">
+                                                <img
+                                                    src=images[curr].clone()
+                                                    alt=format!("Image {}", curr + 1)
+                                                    on:click=toggle_zoom
+                                                    class:zoomed=zoomed
+                                                />
+                                            </div>
+                                            <div class="carousel-slide"></div>
+                                        }
+                                            .into_any()
                                     }
-                                        .into_any()
                                 }
                             }
-                        }}
+                        }
                     </div>
 
-                    // Navigation arrows
-                    <Show when=move || { total_images > 1 }>
-                        <div class="inset-0 absolute z-10">
-                            <Button
-                                on:click=prev
-                                disabled=is_animating
-                                shape=ButtonShape::Circular
-                                icon=icondata::FaChevronLeftSolid
-                                class="opacity-50 absolute left-0 top-1/2 transform -translate-y-1/2 ml-1"
-                            />
-
-                            <Button
-                                on:click=next
-                                shape=ButtonShape::Circular
-                                disabled=is_animating
-                                icon=icondata::FaChevronRightSolid
-                                class="opacity-50 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
+                    <Show when=move || is_zoomed.get()>
+                        <div class="zoom-overlay" on:click=toggle_zoom>
+                            <img
+                                src={
+                                    let image = images.clone();
+                                    move || image[current_index.get()].clone()
+                                }
+                                alt=move || format!("Image {} (zoomed)", current_index.get() + 1)
                             />
                         </div>
                     </Show>
                 </div>
 
-                // Image counter
-                <div class="image-counter">
-                    {move || format!("Image {} of {}", current_index.get() + 1, total_images)}
-                </div>
+                <Show when=move || { total_images > 1 && !is_zoomed.get() }>
+                    <div class="">
+                        <Button
+                            on:click=prev
+                            disabled=is_animating
+                            shape=ButtonShape::Circular
+                            icon=icondata::FaChevronLeftSolid
+                            class="opacity-50 absolute left-0 top-1/2 transform -translate-y-1/2 ml-1"
+                        />
+
+                        <Button
+                            on:click=next
+                            shape=ButtonShape::Circular
+                            disabled=is_animating
+                            icon=icondata::FaChevronRightSolid
+                            class="opacity-50 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
+                        />
+                    </div>
+                </Show>
+
+                <Show when=move || !is_zoomed.get()>
+                    <div class="image-counter">
+                        {move || format!("Image {} of {}", current_index.get() + 1, total_images)}
+                    </div>
+                </Show>
+
             </div>
         </div>
     }
@@ -416,33 +479,43 @@ fn get_project_list() -> Vec<Project> {
     let rex_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: None,
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"), String::from("https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ")]),
+        images: Some(vec![
+            String::from("/assets/rex_1.png"),
+            String::from("/assets/rex_2.png"),
+            String::from("/assets/rex_3.png"),
+            String::from("/assets/rex_4.png"),
+            String::from("/assets/rex_5.png"),
+        ]),
         source_link: String::from("https://github.com/TheRustyPickle/rex"),
         use_nav: false,
     };
     let rex = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/rex_1.png")),
         name: String::from("Rex"),
         description: String::from("A TUI program for keeping track of incomes and expenses"),
-        badges: vec![
-            "Rust".to_string(),
-            "TUI".to_string(),
-            "SQLite".to_string(),
-        ],
+        badges: vec!["Rust".to_string(), "TUI".to_string(), "SQLite".to_string()],
         content: rex_content,
     };
 
     let talon_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: None,
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"), String::from("https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ")]),
+        images: Some(vec![
+            String::from("/assets/talon.png"),
+            String::from("/assets/talon_1.png"),
+            String::from("/assets/talon_2.png"),
+            String::from("/assets/talon_3.png"),
+            String::from("/assets/talon_4.png"),
+        ]),
         source_link: String::from("https://github.com/TheRustyPickle/Talon"),
         use_nav: false,
     };
     let talon = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/talon_1.png")),
         name: String::from("Talon"),
-        description: String::from("A tool to generate on-demand data insights from public Telegram chats"),
+        description: String::from(
+            "A tool to generate on-demand data insights from public Telegram chats",
+        ),
         badges: vec![
             "Rust".to_string(),
             "GUI".to_string(),
@@ -455,12 +528,17 @@ fn get_project_list() -> Vec<Project> {
     let funnel_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")),
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        images: Some(vec![
+            String::from("/assets/funnel_1.png"),
+            String::from("/assets/funnel_2.png"),
+            String::from("/assets/funnel_3.png"),
+            String::from("/assets/funnel_4.png"),
+        ]),
         source_link: String::from("https://github.com/TheRustyPickle/Funnel-Web"),
         use_nav: false,
     };
     let funnel = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/funnel_1.png")),
         name: String::from("Funnel"),
         description: String::from("A platform for visualizing Discord guild analytics"),
         badges: vec![
@@ -477,14 +555,19 @@ fn get_project_list() -> Vec<Project> {
     let chirp_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: None,
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        images: Some(vec![
+            String::from("/assets/chirp_1.png"),
+            String::from("/assets/chirp_2.png"),
+        ]),
         source_link: String::from("https://github.com/TheRustyPickle/Chirp"),
         use_nav: false,
     };
     let chirp = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/chirp_1.png")),
         name: String::from("Chirp"),
-        description: String::from("A chat app built from scratch using GTK4 and Rust with encryption"),
+        description: String::from(
+            "A chat app built from scratch using GTK4 and Rust with encryption",
+        ),
         badges: vec![
             "Rust".to_string(),
             "GTK4".to_string(),
@@ -499,14 +582,16 @@ fn get_project_list() -> Vec<Project> {
     let repo_dl_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: Some(String::from("/repo")),
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
-        source_link: String::from("https://github.com/TheRustyPickle/rex"), // TODO: Update
+        images: Some(vec![String::from("/assets/github_dl.png")]),
+        source_link: String::from("https://github.com/TheRustyPickle/My-Site"),
         use_nav: true,
     };
     let repo_dl = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/github_dl.png")),
         name: String::from("Repo D/L"),
-        description: String::from("Straightforward web app to view GitHub Repo release download status"),
+        description: String::from(
+            "Straightforward web app to view GitHub Repo release download status",
+        ),
         badges: vec![
             "Rust".to_string(),
             "Leptos".to_string(),
@@ -520,19 +605,19 @@ fn get_project_list() -> Vec<Project> {
     let reddit_dl_content = ProjectContent {
         content: String::from("A tui program"),
         demo_link: Some(String::from("/reddit")),
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
-        source_link: String::from("https://github.com/TheRustyPickle/rex"),
+        images: Some(vec![String::from("/assets/dl_reddit.png")]),
+        source_link: String::from("https://github.com/TheRustyPickle/My-Site"),
         use_nav: true,
     };
 
     let reddit_dl = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/dl_reddit.png")),
         name: String::from("Redit D/L"),
         description: String::from("A simple web app to download content from a reddit post"),
         badges: vec![
             "Rust".to_string(),
             "Leptos".to_string(),
-            "Ruox".to_string(),
+            "Roux".to_string(),
             "Dash-MPD".to_string(),
             "Actix-Web".to_string(),
         ],
@@ -541,16 +626,20 @@ fn get_project_list() -> Vec<Project> {
 
     let selectable_table_content = ProjectContent {
         content: String::from("A tui program"),
-        demo_link: Some(String::from("https://therustypickle.github.io/egui-selectable-table/")),
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        demo_link: Some(String::from(
+            "https://therustypickle.github.io/egui-selectable-table/",
+        )),
+        images: Some(vec![String::from("/assets/table.png")]),
         source_link: String::from("https://github.com/TheRustyPickle/egui-selectable-table"),
         use_nav: true,
     };
 
     let selectable_table = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        title_image: Some(String::from("/assets/table.png")),
         name: String::from("egui Selectable Table"),
-        description: String::from("A library for egui to create tables with draggable cell and row selection."),
+        description: String::from(
+            "A library for egui to create tables with draggable cell and row selection.",
+        ),
         badges: vec![
             "Rust".to_string(),
             "egui".to_string(),
@@ -609,7 +698,7 @@ fn get_project_list() -> Vec<Project> {
 
     let this_site_content = ProjectContent {
         content: String::from("A tui program"),
-        demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")), // TODO: Update
+        demo_link: Some(String::from("https://github.com/TheRustyPickle/My-Site")),
         images: None,
         source_link: String::from("https://github.com/TheRustyPickle/rex"),
         use_nav: false,
