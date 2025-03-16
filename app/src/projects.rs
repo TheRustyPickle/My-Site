@@ -1,9 +1,9 @@
-use icondata::Icon;
 use leptos::prelude::*;
 use leptos_meta::Title;
+use leptos_router::hooks::use_navigate;
 use thaw::{
-    Badge, BadgeAppearance, Button, ButtonAppearance, ButtonShape, Card, Dialog, DialogActions,
-    DialogBody, DialogContent, DialogSurface, DialogTitle,
+    Badge, BadgeAppearance, Button, ButtonAppearance, ButtonShape, Card, Dialog, DialogContent,
+    DialogSurface, DialogTitle,
 };
 
 #[derive(Clone)]
@@ -21,6 +21,7 @@ struct ProjectContent {
     content: String,
     source_link: String,
     demo_link: Option<String>,
+    use_nav: bool,
 }
 
 #[component]
@@ -102,6 +103,37 @@ fn show_dialog(project: Project) -> impl IntoView {
     let images = project.content.images.clone();
     let source_link = project.content.source_link.clone();
     let demo_link = project.content.demo_link.clone();
+    let use_nav = project.content.use_nav;
+
+    let nav_or_link = move |demo_link: String| {
+        if !use_nav {
+            view! {
+                <a href=demo_link target="_blank">
+                    <Button
+                        appearance=ButtonAppearance::Primary
+                        icon=icondata::BiLinkExternalRegular
+                    >
+                        "Live Demo"
+                    </Button>
+                </a>
+            }
+            .into_any()
+        } else {
+            view! {
+                <Button
+                    appearance=ButtonAppearance::Primary
+                    icon=icondata::BiLinkExternalRegular
+                    on:click=move |_| {
+                        let navigate = use_navigate();
+                        navigate(&demo_link, Default::default());
+                    }
+                >
+                    "Live Demo"
+                </Button>
+            }
+            .into_any()
+        }
+    };
 
     view! {
         <div class="w-full max-w-xl">
@@ -123,44 +155,24 @@ fn show_dialog(project: Project) -> impl IntoView {
 
             <div class="flex flex-wrap gap-3 mt-4 justify-center items-center">
                 <a href=source_link target="_blank">
-                    <Button appearance=ButtonAppearance::Primary>"View Source"</Button>
+                    <Button appearance=ButtonAppearance::Primary icon=icondata::AiGithubFilled>
+                        "View Source"
+                    </Button>
                 </a>
 
                 <Show when={
                     let demo = demo_link.clone();
                     move || demo.is_some()
                 }>
-                    <a href=demo_link.clone() target="_blank">
-                        <Button appearance=ButtonAppearance::Primary>"Live Demo"</Button>
-                    </a>
+                    {
+                        let demo_link = demo_link.clone().unwrap();
+                        nav_or_link(demo_link)
+                    }
                 </Show>
             </div>
         </DialogContent>
     }
     .into_any()
-}
-
-fn get_project_list() -> Vec<Project> {
-    let rex_content = ProjectContent {
-        content: String::from("A tui program"),
-        demo_link: None,
-        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"), String::from("https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ")]),
-        source_link: String::from("https://github.com/TheRustyPickle/rex"),
-    };
-    let rex = Project {
-        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
-        name: String::from("Rex"),
-        description: String::from("A TUI program"),
-        badges: vec![
-            "Rust".to_string(),
-            "Terminal".to_string(),
-            "Ratatui".to_string(),
-            "SQLite".to_string(),
-        ],
-        content: rex_content,
-    };
-
-    vec![rex]
 }
 
 #[component]
@@ -369,23 +381,25 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
                     </div>
 
                     // Navigation arrows
-                    <div class="inset-0 absolute z-10">
-                        <Button
-                            on:click=prev
-                            disabled=is_animating
-                            shape=ButtonShape::Circular
-                            icon=icondata::FaChevronLeftSolid
-                            class="opacity-50 absolute left-0 top-1/2 transform -translate-y-1/2 ml-1"
-                        />
+                    <Show when=move || { total_images > 1 }>
+                        <div class="inset-0 absolute z-10">
+                            <Button
+                                on:click=prev
+                                disabled=is_animating
+                                shape=ButtonShape::Circular
+                                icon=icondata::FaChevronLeftSolid
+                                class="opacity-50 absolute left-0 top-1/2 transform -translate-y-1/2 ml-1"
+                            />
 
-                        <Button
-                            on:click=next
-                            shape=ButtonShape::Circular
-                            disabled=is_animating
-                            icon=icondata::FaChevronRightSolid
-                            class="opacity-50 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
-                        />
-                    </div>
+                            <Button
+                                on:click=next
+                                shape=ButtonShape::Circular
+                                disabled=is_animating
+                                icon=icondata::FaChevronRightSolid
+                                class="opacity-50 absolute right-0 top-1/2 transform -translate-y-1/2 mr-1"
+                            />
+                        </div>
+                    </Show>
                 </div>
 
                 // Image counter
@@ -396,4 +410,236 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
         </div>
     }
     .into_any()
+}
+
+fn get_project_list() -> Vec<Project> {
+    let rex_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: None,
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"), String::from("https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ")]),
+        source_link: String::from("https://github.com/TheRustyPickle/rex"),
+        use_nav: false,
+    };
+    let rex = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Rex"),
+        description: String::from("A TUI program for keeping track of incomes and expenses"),
+        badges: vec![
+            "Rust".to_string(),
+            "TUI".to_string(),
+            "SQLite".to_string(),
+        ],
+        content: rex_content,
+    };
+
+    let talon_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: None,
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"), String::from("https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ")]),
+        source_link: String::from("https://github.com/TheRustyPickle/Talon"),
+        use_nav: false,
+    };
+    let talon = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Talon"),
+        description: String::from("A tool to generate on-demand data insights from public Telegram chats"),
+        badges: vec![
+            "Rust".to_string(),
+            "GUI".to_string(),
+            "Telegram".to_string(),
+            "Analytics".to_string(),
+        ],
+        content: talon_content,
+    };
+
+    let funnel_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")),
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        source_link: String::from("https://github.com/TheRustyPickle/Funnel-Web"),
+        use_nav: false,
+    };
+    let funnel = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Funnel"),
+        description: String::from("A platform for visualizing Discord guild analytics"),
+        badges: vec![
+            "Rust".to_string(),
+            "WASM".to_string(),
+            "WebSocket".to_string(),
+            "PostgreSQL".to_string(),
+            "Discord".to_string(),
+            "Actix-Web".to_string(),
+        ],
+        content: funnel_content,
+    };
+
+    let chirp_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: None,
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        source_link: String::from("https://github.com/TheRustyPickle/Chirp"),
+        use_nav: false,
+    };
+    let chirp = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Chirp"),
+        description: String::from("A chat app built from scratch using GTK4 and Rust with encryption"),
+        badges: vec![
+            "Rust".to_string(),
+            "GTK4".to_string(),
+            "Encryption".to_string(),
+            "WebSocket".to_string(),
+            "PostgreSQL".to_string(),
+            "Diesel".to_string(),
+        ],
+        content: chirp_content,
+    };
+
+    let repo_dl_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from("/repo")),
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        source_link: String::from("https://github.com/TheRustyPickle/rex"), // TODO: Update
+        use_nav: true,
+    };
+    let repo_dl = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Repo D/L"),
+        description: String::from("Straightforward web app to view GitHub Repo release download status"),
+        badges: vec![
+            "Rust".to_string(),
+            "Leptos".to_string(),
+            "WASM".to_string(),
+            "Octocrab".to_string(),
+            "Actix-Web".to_string(),
+        ],
+        content: repo_dl_content,
+    };
+
+    let reddit_dl_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from("/reddit")),
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        source_link: String::from("https://github.com/TheRustyPickle/rex"),
+        use_nav: true,
+    };
+
+    let reddit_dl = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("Redit D/L"),
+        description: String::from("A simple web app to download content from a reddit post"),
+        badges: vec![
+            "Rust".to_string(),
+            "Leptos".to_string(),
+            "Ruox".to_string(),
+            "Dash-MPD".to_string(),
+            "Actix-Web".to_string(),
+        ],
+        content: reddit_dl_content,
+    };
+
+    let selectable_table_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from("https://therustypickle.github.io/egui-selectable-table/")),
+        images: Some(vec![String::from("https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU")]),
+        source_link: String::from("https://github.com/TheRustyPickle/egui-selectable-table"),
+        use_nav: true,
+    };
+
+    let selectable_table = Project {
+        title_image: Some(String::from("https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg?height=600&width=800")),
+        name: String::from("egui Selectable Table"),
+        description: String::from("A library for egui to create tables with draggable cell and row selection."),
+        badges: vec![
+            "Rust".to_string(),
+            "egui".to_string(),
+            "Library".to_string(),
+            "Widget".to_string(),
+        ],
+        content: selectable_table_content,
+    };
+
+    let theme_lerp_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from(
+            "https://therustypickle.github.io/egui-theme-lerp/",
+        )),
+        images: None,
+        source_link: String::from("https://github.com/TheRustyPickle/egui-theme-lerp"),
+        use_nav: true,
+    };
+
+    let theme_lerp = Project {
+        title_image: Some(String::from(
+            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
+        )),
+        name: String::from("egui Theme Animation"),
+        description: String::from(
+            "A simple library for egui to smoothly animate theme transitions",
+        ),
+        badges: vec![
+            "Rust".to_string(),
+            "egui".to_string(),
+            "Library".to_string(),
+            "Animation".to_string(),
+        ],
+        content: theme_lerp_content,
+    };
+
+    let pulse_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: None,
+        images: None,
+        source_link: String::from("https://github.com/TheRustyPickle/Pulse"),
+        use_nav: false,
+    };
+
+    let pulse = Project {
+        title_image: Some(String::from(
+            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
+        )),
+        name: String::from("Pulse"),
+        description: String::from(
+            "A Discord bot for scheduling messages with simple configuration",
+        ),
+        badges: vec!["Rust".to_string(), "Discord".to_string(), "Bot".to_string()],
+        content: pulse_content,
+    };
+
+    let this_site_content = ProjectContent {
+        content: String::from("A tui program"),
+        demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")), // TODO: Update
+        images: None,
+        source_link: String::from("https://github.com/TheRustyPickle/rex"),
+        use_nav: false,
+    };
+
+    let this_site = Project {
+        title_image: Some(String::from(
+            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
+        )),
+        name: String::from("This Site"),
+        description: String::from("Info about this site"),
+        badges: vec![
+            "Rust".to_string(),
+            "Leptos".to_string(),
+            "Actix-Web".to_string(),
+            "Thaw".to_string(),
+        ],
+        content: this_site_content,
+    };
+
+    vec![
+        rex,
+        talon,
+        funnel,
+        chirp,
+        repo_dl,
+        reddit_dl,
+        selectable_table,
+        theme_lerp,
+        pulse,
+        this_site,
+    ]
 }

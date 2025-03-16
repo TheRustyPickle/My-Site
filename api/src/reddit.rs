@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use dash_mpd::fetch::DashDownloader;
-use dash_mpd::{parse, MPD};
+use dash_mpd::{MPD, parse};
 use log::info;
 use reqwest::Client;
 use roux::Reddit;
