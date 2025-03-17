@@ -1,21 +1,12 @@
 use anyhow::{anyhow, Result};
 use log::error;
-use octocrab::Octocrab;
-use reqwest::Client;
+use octocrab::{Error, Octocrab};
 use shared::models::{ReleaseAsset, ReleaseInfo, RepoReleasesSummary};
 
 pub async fn get_release_data(username: String, repo: String) -> Result<RepoReleasesSummary> {
-    let client = Client::builder().user_agent("MyRustApp/1.0").build()?;
+    let personal_token = std::env::var("PERSONAL_TOKEN").unwrap_or_default();
 
-    let resp = client
-        .get("https://api.github.com/repos/rust-lang/rust/releases")
-        .send()
-        .await?
-        .text()
-        .await?;
-
-    log::info!("{resp}");
-    let octocrab = Octocrab::builder().build()?;
+    let octocrab = Octocrab::builder().personal_token(personal_token).build()?;
 
     let mut releases = Vec::new();
     let mut page = octocrab
@@ -25,8 +16,15 @@ pub async fn get_release_data(username: String, repo: String) -> Result<RepoRele
         .send()
         .await
         .map_err(|e| {
-            error!("Failed to get repository info for {username}/{repo}. Error: {e}");
-            anyhow!("Failed to get release data from the repository. Does the repository exist?")
+            let error = match e {
+                Error::GitHub { source, backtrace: _ } => {
+                    source.message
+                }
+                _ => "Unknown error".to_string(),
+            };
+
+            error!("Failed to get repository info for {username}/{repo}. Reason: {error}");
+            anyhow!("Failed to get release data from the repository. Does the repository exist? Reason: {error}")
         })?;
 
     while let Some(next_page) = octocrab.get_page(&page.next).await.map_err(|e| {
