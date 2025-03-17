@@ -90,12 +90,7 @@ pub fn RepoDL() -> impl IntoView {
                     {move || content_button_text()}
                 </Button>
 
-                <Show
-                    when=move || !error_resp.get().is_empty()
-                    fallback=move || {
-                        view! { "" }
-                    }
-                >
+                <Show when=move || !error_resp.get().is_empty()>
                     <p class="text-red-500 mt-2">{error_resp.get()}</p>
                 </Show>
             </Card>

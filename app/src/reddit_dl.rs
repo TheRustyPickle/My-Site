@@ -141,10 +141,9 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
     };
 
     view! {
-        <Show
-            when=move || data.get().is_some() && !data.get().unwrap().data.is_empty()
-            fallback=move || view! { "" }.into_any()
-        >
+        <Show when=move || {
+            data.get().is_some() && !data.get().unwrap().data.is_empty()
+        }>
             {move || match data.get().unwrap().download_type {
                 DlType::Image => {
                     view! {

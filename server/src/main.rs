@@ -50,8 +50,11 @@ async fn main() -> std::io::Result<()> {
 
                 if !path.starts_with("/pkg/")
                     && !path.ends_with(".js")
+                    && !path.ends_with(".js")
                     && !path.ends_with(".css")
                     && !path.ends_with(".wasm")
+                    && !path.starts_with("/assets/")
+                    && !path.starts_with("/favicon.ico")
                     && path != "/sw.js"
                 {
                     info!("Serving data for path: {path}. Request gotten from: {ip}",);

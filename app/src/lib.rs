@@ -65,16 +65,12 @@ pub fn App() -> impl IntoView {
 
     let navigate_to_page = move |_| {
         let selected_value = tab_value.get();
-        let value_path = if selected_value == "projects" {
-            "/projects"
-        } else if selected_value == "reddit" {
-            "/reddit"
-        } else if selected_value == "repo" {
-            "/repo"
-        } else if selected_value == "about" {
-            "/about"
-        } else {
-            "/not_found"
+        let value_path = match selected_value.as_str() {
+            "projects" => "/projects",
+            "reddit" => "/reddit",
+            "repo" => "/repo",
+            "about" => "/about",
+            _ => "/not_found",
         };
 
         let navigate = use_navigate();
