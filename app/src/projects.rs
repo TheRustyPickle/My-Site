@@ -1,10 +1,22 @@
 use leptos::prelude::*;
 use leptos_meta::Title;
-use leptos_router::hooks::use_navigate;
 use thaw::{
     Badge, BadgeAppearance, Button, ButtonAppearance, ButtonShape, Card, Dialog, DialogContent,
-    DialogSurface, DialogTitle,
+    DialogSurface, DialogTitle, Scrollbar,
 };
+
+#[derive(Copy, Clone)]
+enum ContentProject {
+    Rex,
+    Talon,
+    Funnel,
+    Chirp,
+    RepoDL,
+    RedditDL,
+    Table,
+    Theme,
+    Pulse,
+}
 
 #[derive(Clone)]
 struct Project {
@@ -18,10 +30,9 @@ struct Project {
 #[derive(Clone)]
 struct ProjectContent {
     images: Option<Vec<String>>,
-    content: String,
+    content: ContentProject,
     source_link: String,
     demo_link: Option<String>,
-    use_nav: bool,
 }
 
 #[component]
@@ -87,8 +98,12 @@ pub fn Projects() -> impl IntoView {
 
         <Dialog open=dialog_open>
             <DialogSurface>
-                <Show when=move || open_project.get().is_some() fallback=|| view! { "" }>
-                    {move || view! { <ShowDialog project=open_project.get().unwrap() /> }}
+                <Show when=move || {
+                    open_project.get().is_some()
+                }>
+                    {move || {
+                        view! { <ShowDialog project=open_project.get().unwrap() dialog_open /> }
+                    }}
                 </Show>
             </DialogSurface>
         </Dialog>
@@ -96,44 +111,13 @@ pub fn Projects() -> impl IntoView {
 }
 
 #[component]
-fn show_dialog(project: Project) -> impl IntoView {
+fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
     let name = project.name.clone();
-    let content = project.content.content.clone();
+    let content = project.content.content;
     let badges = project.badges.clone();
     let images = project.content.images.clone();
     let source_link = project.content.source_link.clone();
     let demo_link = project.content.demo_link.clone();
-    let use_nav = project.content.use_nav;
-
-    let nav_or_link = move |demo_link: String| {
-        if !use_nav {
-            view! {
-                <a href=demo_link target="_blank">
-                    <Button
-                        appearance=ButtonAppearance::Primary
-                        icon=icondata::BiLinkExternalRegular
-                    >
-                        "Live Demo"
-                    </Button>
-                </a>
-            }
-            .into_any()
-        } else {
-            view! {
-                <Button
-                    appearance=ButtonAppearance::Primary
-                    icon=icondata::BiLinkExternalRegular
-                    on:click=move |_| {
-                        let navigate = use_navigate();
-                        navigate(&demo_link, Default::default());
-                    }
-                >
-                    "Live Demo"
-                </Button>
-            }
-            .into_any()
-        }
-    };
 
     view! {
         <div class="w-full max-w-xl">
@@ -151,7 +135,9 @@ fn show_dialog(project: Project) -> impl IntoView {
                 {name}
             </DialogTitle>
 
-            <div class="prose max-w-none justify-center text-center">{content}</div>
+            <Scrollbar style="max-height: 200px;" class="prose max-w-none overflow-y-auto">
+                {get_project_content(content)}
+            </Scrollbar>
 
             <div class="flex flex-wrap gap-3 mt-4 justify-center items-center">
                 <a href=source_link target="_blank">
@@ -166,9 +152,27 @@ fn show_dialog(project: Project) -> impl IntoView {
                 }>
                     {
                         let demo_link = demo_link.clone().unwrap();
-                        nav_or_link(demo_link)
+                        let a_target = if demo_link.starts_with("/") { "" } else { "_blank" };
+                        view! {
+                            <a href=demo_link target=a_target>
+                                <Button
+                                    appearance=ButtonAppearance::Primary
+                                    icon=icondata::AiGithubFilled
+                                >
+                                    "Live Demo"
+                                </Button>
+                            </a>
+                        }
                     }
                 </Show>
+
+                <Button
+                    appearance=ButtonAppearance::Primary
+                    icon=icondata::CgClose
+                    on:click=move |_| dialog_open.set(false)
+                >
+                    "Close"
+                </Button>
             </div>
         </DialogContent>
     }
@@ -493,7 +497,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
 
 fn get_project_list() -> Vec<Project> {
     let rex_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Rex,
         demo_link: None,
         images: Some(vec![
             String::from("/assets/rex_1.png"),
@@ -503,7 +507,6 @@ fn get_project_list() -> Vec<Project> {
             String::from("/assets/rex_5.png"),
         ]),
         source_link: String::from("https://github.com/TheRustyPickle/rex"),
-        use_nav: false,
     };
     let rex = Project {
         title_image: Some(String::from("/assets/rex_1.png")),
@@ -514,7 +517,7 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let talon_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Talon,
         demo_link: None,
         images: Some(vec![
             String::from("/assets/talon.png"),
@@ -524,7 +527,6 @@ fn get_project_list() -> Vec<Project> {
             String::from("/assets/talon_4.png"),
         ]),
         source_link: String::from("https://github.com/TheRustyPickle/Talon"),
-        use_nav: false,
     };
     let talon = Project {
         title_image: Some(String::from("/assets/talon_1.png")),
@@ -542,7 +544,7 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let funnel_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Funnel,
         demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")),
         images: Some(vec![
             String::from("/assets/funnel_1.png"),
@@ -551,7 +553,6 @@ fn get_project_list() -> Vec<Project> {
             String::from("/assets/funnel_4.png"),
         ]),
         source_link: String::from("https://github.com/TheRustyPickle/Funnel-Web"),
-        use_nav: false,
     };
     let funnel = Project {
         title_image: Some(String::from("/assets/funnel_1.png")),
@@ -569,14 +570,13 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let chirp_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Chirp,
         demo_link: None,
         images: Some(vec![
             String::from("/assets/chirp_1.png"),
             String::from("/assets/chirp_2.png"),
         ]),
         source_link: String::from("https://github.com/TheRustyPickle/Chirp"),
-        use_nav: false,
     };
     let chirp = Project {
         title_image: Some(String::from("/assets/chirp_1.png")),
@@ -596,11 +596,10 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let repo_dl_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::RepoDL,
         demo_link: Some(String::from("/repo")),
         images: Some(vec![String::from("/assets/github_dl.png")]),
         source_link: String::from("https://github.com/TheRustyPickle/My-Site"),
-        use_nav: true,
     };
     let repo_dl = Project {
         title_image: Some(String::from("/assets/github_dl.png")),
@@ -611,21 +610,18 @@ fn get_project_list() -> Vec<Project> {
         badges: vec![
             "Rust".to_string(),
             "Leptos".to_string(),
-            "WASM".to_string(),
-            "Octocrab".to_string(),
+            "GitHub".to_string(),
             "Actix-Web".to_string(),
         ],
         content: repo_dl_content,
     };
 
     let reddit_dl_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::RedditDL,
         demo_link: Some(String::from("/reddit")),
         images: Some(vec![String::from("/assets/dl_reddit.png")]),
         source_link: String::from("https://github.com/TheRustyPickle/My-Site"),
-        use_nav: true,
     };
-
     let reddit_dl = Project {
         title_image: Some(String::from("/assets/dl_reddit.png")),
         name: String::from("Redit D/L"),
@@ -633,23 +629,20 @@ fn get_project_list() -> Vec<Project> {
         badges: vec![
             "Rust".to_string(),
             "Leptos".to_string(),
-            "Roux".to_string(),
-            "Dash-MPD".to_string(),
+            "Reddit".to_string(),
             "Actix-Web".to_string(),
         ],
         content: reddit_dl_content,
     };
 
     let selectable_table_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Table,
         demo_link: Some(String::from(
             "https://therustypickle.github.io/egui-selectable-table/",
         )),
         images: Some(vec![String::from("/assets/table.png")]),
         source_link: String::from("https://github.com/TheRustyPickle/egui-selectable-table"),
-        use_nav: true,
     };
-
     let selectable_table = Project {
         title_image: Some(String::from("/assets/table.png")),
         name: String::from("egui Selectable Table"),
@@ -666,19 +659,15 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let theme_lerp_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Theme,
         demo_link: Some(String::from(
             "https://therustypickle.github.io/egui-theme-lerp/",
         )),
         images: None,
         source_link: String::from("https://github.com/TheRustyPickle/egui-theme-lerp"),
-        use_nav: true,
     };
-
     let theme_lerp = Project {
-        title_image: Some(String::from(
-            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
-        )),
+        title_image: Some(String::from("/assets/placeholder.svg")),
         name: String::from("egui Theme Animation"),
         description: String::from(
             "A simple library for egui to smoothly animate theme transitions",
@@ -693,46 +682,19 @@ fn get_project_list() -> Vec<Project> {
     };
 
     let pulse_content = ProjectContent {
-        content: String::from("A tui program"),
+        content: ContentProject::Pulse,
         demo_link: None,
         images: None,
         source_link: String::from("https://github.com/TheRustyPickle/Pulse"),
-        use_nav: false,
     };
-
     let pulse = Project {
-        title_image: Some(String::from(
-            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
-        )),
+        title_image: Some(String::from("/assets/placeholder.svg")),
         name: String::from("Pulse"),
         description: String::from(
             "A Discord bot for scheduling messages with simple configuration",
         ),
         badges: vec!["Rust".to_string(), "Discord".to_string(), "Bot".to_string()],
         content: pulse_content,
-    };
-
-    let this_site_content = ProjectContent {
-        content: String::from("A tui program"),
-        demo_link: Some(String::from("https://github.com/TheRustyPickle/My-Site")),
-        images: None,
-        source_link: String::from("https://github.com/TheRustyPickle/rex"),
-        use_nav: false,
-    };
-
-    let this_site = Project {
-        title_image: Some(String::from(
-            "https://kzmgsz03dn2o1l269lcn.lite.vusercontent.net/placeholder.svg",
-        )),
-        name: String::from("This Site"),
-        description: String::from("Info about this site"),
-        badges: vec![
-            "Rust".to_string(),
-            "Leptos".to_string(),
-            "Actix-Web".to_string(),
-            "Thaw".to_string(),
-        ],
-        content: this_site_content,
     };
 
     vec![
@@ -745,6 +707,267 @@ fn get_project_list() -> Vec<Project> {
         selectable_table,
         theme_lerp,
         pulse,
-        this_site,
     ]
+}
+
+fn get_project_content(project: ContentProject) -> impl IntoView {
+    match project {
+        ContentProject::Rex => view! {
+            <p class="text-lg font-medium">
+                "Rex is a terminal user interface app for managing incomes, expenses, and transactions.
+                Built with Rust and Ratatui, it features a simple interface that’s easy to use."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Key features include:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>"Easily view, add, edit, and delete transactions."</li>
+                <li>
+                    "Navigate through transactions and instantly observe balance changes 
+                    after each transaction."
+                </li>
+                <li>
+                    "Chart visualization of balance changes over a specific month, year, or all transactions."
+                </li>
+                <li>
+                    "Access a summary with key insights on income, expense, and percentage distribution."
+                </li>
+                <li>"Built using SQLite, keeping everything local."</li>
+                <li>Find transactions quickly using partial or specific information.</li>
+                <li>"Organize transactions with custom tags for easy filtering."</li>
+                <li>Works fully offline.</li>
+            </ul>
+        }.into_any(),
+        ContentProject::Talon => view! {
+            <p class="text-lg font-medium">
+                "Talon is a tool to generate on-demand data insights from public Telegram chats. Powered by Rust, grammers, and egui, it offers a straightforward interface that leverages the Telegram account API."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Features:"</p>
+
+            <ul class="mt-2 list-dict list-inside space-y-2">
+                <li>
+                    <strong>"User and Message Metrics:"</strong>
+                    " Displays the number of unique users, total messages counted, and other info."
+                </li>
+                <li>
+                    <strong>"Detailed User Insights:"</strong>
+                    " View comprehensive user details including name, username, ID, total messages, total words, total characters, and more."
+                </li>
+                <li>
+                    <strong>"Interactive Data Table:"</strong>
+                    " Select cells, interact with the table, and copy data in an organized manner."
+                </li>
+                <li>
+                    <strong>"Visual Analytics:"</strong>
+                    " Visualize message counts and active users on an hourly, daily, weekly, monthly, and day-of-the-week basis."
+                </li>
+                <li>
+                    <strong>"Date Range and Navigation:"</strong>
+                    " Easily navigate and view table and chart data within a specific date range with buttons to cycle by day, week, month, or year."
+                </li>
+                <li>
+                    <strong>"Session Management:"</strong>
+                    " Choose between temporary sessions (logs out on app close) or non-temporary sessions (creates a file for persistent login)."
+                </li>
+                <li>
+                    <strong>"User Grouping:"</strong>
+                    " Group specific users by whitelisting to analyze their activity separately."
+                </li>
+                <li>
+                    <strong>"Blacklisting:"</strong>
+                    " Exclude specific users from data analysis to prevent their data from appearing in the results."
+                </li>
+                <li>
+                    <strong>"Multi-Session Capability:"</strong>
+                    " Utilize multiple sessions to dramatically increase checking speed, tested with up to 12 sessions and 300k messages."
+                </li>
+                <li>
+                    <strong>"Multi-Chat Capability:"</strong>
+                    " Analyze multiple chats simultaneously and view data from each chat separately."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::Funnel => view! {
+            <p class="text-lg font-medium">
+                "Funnel is a platform for visualizing Discord analytics, built with Rust and egui with WASM compatibility"
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Primary Components:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"Overview:"</strong>
+                    " Summarizes key metrics such as total messages, unique users, and the most active channels and users. Includes a chart tracking member movement (e.g., joins and leaves)."
+                </li>
+                <li>
+                    <strong>"User Table:"</strong>
+                    " Displays all users along with message counts, word usage, and other activity details."
+                </li>
+                <li>
+                    <strong>"Channel Table:"</strong>
+                    " Provides message statistics for each channel, allowing easy comparison of activity levels."
+                </li>
+                <li>
+                    <strong>"Message Chart:"</strong>
+                    " Visualizes total and deleted messages over time. Supports adding specific users for detailed analysis across daily, hourly, weekly, and monthly intervals."
+                </li>
+                <li>
+                    <strong>"User Activity Chart:"</strong>
+                    " Tracks active user counts over different timeframes, helping to identify engagement trends."
+                </li>
+                <li>
+                    <strong>"Common Words Analysis:"</strong>
+                    " Highlights the most frequently used words or phrases in messages to reveal discussion trends."
+                </li>
+                <li>
+                    <strong>"Channel Filter:"</strong>
+                    " Enables filtering all analytics by selected channels, allowing focused analysis."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::Chirp => view! {
+            <p class="text-lg font-medium">
+                "Chirp is a chat application built from scratch using GTK4 in Rust, offering a native Linux experience with a strong focus on security and real-time communication."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Core Capabilities:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"🎨 User Interface:"</strong>
+                    " Designed with GTK4-rs for a smooth, native Linux experience."
+                </li>
+                <li>
+                    <strong>"🌐 WebSocket Server:"</strong>
+                    " Built with actix-web, enabling multi-client support with automatic reconnection."
+                </li>
+                <li>
+                    <strong>"🛡️ Security:"</strong>
+                    " Implements TLS-encrypted server communication and token-based authentication for secure access."
+                </li>
+                <li>
+                    <strong>"💬 Messaging:"</strong>
+                    " Supports sending and deleting messages, creating new chats, and synchronizing messages on startup."
+                </li>
+                <li>
+                    <strong>"🔒 Message Encryption:"</strong>
+                    " Uses a hybrid RSA + AES encryption system to protect messages, ensuring they are decrypted locally for display."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::RepoDL => view! {
+            <p class="text-lg font-medium">
+                "A simple tool for tracking GitHub repository releases and download statistics, providing quick insights into release popularity and overall download trends."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Insights Provided:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"📊 Total Downloads:"</strong>
+                    " Displays the cumulative download count across all releases."
+                </li>
+                <li>
+                    <strong>"🏆 Most Popular Release:"</strong>
+                    " Identifies the release with the highest number of downloads."
+                </li>
+                <li>
+                    <strong>"📅 Release Breakdown:"</strong>
+                    " Shows download statistics for each release, including total downloads and per-file download counts."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::RedditDL => view! {
+            <p class="text-lg font-medium">
+                "A lightweight tool for quickly downloading videos and images from Reddit posts"
+            </p>
+        }.into_any(),
+        ContentProject::Table => view! {
+            <p class="text-lg font-medium">
+                "A library for egui that enables creating tables with draggable cell and row selection, offering flexibility and performance for large datasets."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Key Capabilities:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"Draggable Selection:"</strong>
+                    " Supports both individual cell and full-row selection while dragging."
+                </li>
+                <li>
+                    <strong>"Automatic Scrolling:"</strong>
+                    " Enables vertical table scrolling during drag, with adjustable sensitivity."
+                </li>
+                <li>
+                    <strong>"Sortable Headers:"</strong>
+                    " Allows sorting rows by clicking headers, with both ascending and descending order."
+                </li>
+                <li>
+                    <strong>"Customizable UI:"</strong>
+                    " Provides flexibility to modify row and header appearance."
+                </li>
+                <li>
+                    <strong>"Keyboard Shortcuts:"</strong>
+                    " Includes built-in support for 'Select All' (Ctrl+A) and 'Copy' (Ctrl+C)."
+                </li>
+                <li>
+                    <strong>"High Performance:"</strong>
+                    " Efficiently handles large datasets (1M+ rows) with proper configuration."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::Theme => view! {
+            <p class="text-lg font-medium">
+                "A lightweight library for egui that enables smooth theme transitions by linearly interpolating between any two visuals or themes."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Core Functionality:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"Seamless Transitions:"</strong>
+                    " Interpolates between two egui themes for smooth visual changes."
+                </li>
+                <li>
+                    <strong>"Adjustable Timing:"</strong>
+                    " Allows customization of transition speed for a tailored experience."
+                </li>
+                <li>
+                    <strong>"Lightweight and Efficient:"</strong>
+                    " Designed to be minimal, with no unnecessary overhead."
+                </li>
+            </ul>
+        }.into_any(),
+        ContentProject::Pulse => view! {
+            <p class="text-lg font-medium">
+                "Pulse is a straightforward Discord bot for scheduling messages with customization options. Built with Rust and the Serenity library, it prioritizes ease of use with a simple configuration system."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Core Capabilities:"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    <strong>"Scheduled Messaging:"</strong>
+                    " Automate message delivery in Discord servers with precise timing."
+                </li>
+                <li>
+                    <strong>"Versatile Message Support:"</strong>
+                    " Send text, file attachments, polls, and quizzes effortlessly."
+                </li>
+                <li>
+                    <strong>"Robust Error Handling:"</strong>
+                    " Prevents crashes in most cases, ensuring stable operation."
+                </li>
+                <li>
+                    <strong>"Simple Configuration:"</strong>
+                    " Uses easy-to-read JSON files with no complex nesting."
+                </li>
+                <li>
+                    <strong>"Configuration Reloading:"</strong>
+                    " No bot restarts required when modifying schedules—only bot settings need a restart."
+                </li>
+            </ul>
+        }.into_any(),
+    }
 }
