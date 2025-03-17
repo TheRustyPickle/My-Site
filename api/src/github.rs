@@ -1,9 +1,15 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use log::error;
 use octocrab::Octocrab;
 use shared::models::{ReleaseAsset, ReleaseInfo, RepoReleasesSummary};
 
 pub async fn get_release_data(username: String, repo: String) -> Result<RepoReleasesSummary> {
+    let resp = reqwest::get("https://api.github.com/repos/rust-lang/rust/releases")
+        .await?
+        .text()
+        .await?;
+
+    log::info!("{resp}");
     let octocrab = Octocrab::builder().build()?;
 
     let mut releases = Vec::new();

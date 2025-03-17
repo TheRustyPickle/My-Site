@@ -1,6 +1,6 @@
 # About
 
-The source code of my site, built with Leptos and hosted on [https://render.com/](Render)
+The source code of my site, built with Leptos and hosted on [Render](https://render.com/)
 
 ## How to run
 
