@@ -1,10 +1,15 @@
 use anyhow::{anyhow, Result};
 use log::error;
 use octocrab::Octocrab;
+use reqwest::Client;
 use shared::models::{ReleaseAsset, ReleaseInfo, RepoReleasesSummary};
 
 pub async fn get_release_data(username: String, repo: String) -> Result<RepoReleasesSummary> {
-    let resp = reqwest::get("https://api.github.com/repos/rust-lang/rust/releases")
+    let client = Client::builder().user_agent("MyRustApp/1.0").build()?;
+
+    let resp = client
+        .get("https://api.github.com/repos/rust-lang/rust/releases")
+        .send()
         .await?
         .text()
         .await?;
