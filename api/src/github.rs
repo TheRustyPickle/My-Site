@@ -1,12 +1,16 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::error;
 use octocrab::{Error, Octocrab};
 use shared::models::{ReleaseAsset, ReleaseInfo, RepoReleasesSummary};
 
 pub async fn get_release_data(username: String, repo: String) -> Result<RepoReleasesSummary> {
-    let personal_token = std::env::var("PERSONAL_TOKEN").unwrap_or_default();
+    let mut octocrab_builder = Octocrab::builder();
 
-    let octocrab = Octocrab::builder().personal_token(personal_token).build()?;
+    if let Ok(token) = std::env::var("PERSONAL_TOKEN") {
+        octocrab_builder = octocrab_builder.personal_token(token);
+    }
+
+    let octocrab = octocrab_builder.build()?;
 
     let mut releases = Vec::new();
     let mut page = octocrab
