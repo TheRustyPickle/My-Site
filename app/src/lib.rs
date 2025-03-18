@@ -4,8 +4,12 @@ mod reddit_dl;
 mod repo_dl;
 mod utils;
 
+#[allow(unused_imports)]
+use leptos::task::spawn_local;
+
 use about::About;
 use leptos::prelude::*;
+
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
@@ -14,7 +18,7 @@ use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;
 use std::collections::HashMap;
-use thaw::{ConfigProvider, Tab, TabList, Theme};
+use thaw::{ConfigProvider, Layout, LayoutPosition, Scrollbar, Tab, TabList, Theme};
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -77,6 +81,28 @@ pub fn App() -> impl IntoView {
         navigate(value_path, Default::default());
     };
 
+    #[allow(unused_variables)]
+    let (style_color, set_style) = signal(String::from("f3f4f6ff"));
+
+    // Cannot compile without WASM.
+    // For whatever reason, if spawn_local is not used, state update is not reflected properly.
+    #[cfg(target_arch = "wasm32")]
+    {
+        spawn_local(async move {
+            let window = web_sys::window().unwrap();
+            let media_query = window
+                .match_media("(prefers-color-scheme: dark)")
+                .unwrap()
+                .unwrap();
+
+            if media_query.matches() {
+                theme.set(Theme::dark());
+                set_style.set(String::from("111827ff"));
+            }
+        });
+    }
+    let computed_style = move || format!("background-color: #{};", style_color.get());
+
     view! {
         <Stylesheet id="leptos" href="/pkg/my_site.css" />
         <Title text="Rusty Pickle" />
@@ -84,35 +110,39 @@ pub fn App() -> impl IntoView {
         <Router>
             {set_tab_value()} <main>
                 <ConfigProvider theme>
-                    <div class="flex justify-center item-center mt-1 bg-gray-100">
-                        <TabList
-                            selected_value=tab_value
-                            class="min-w-72 mb-8 bg-white justify-center item-center flex rounded-lg"
-                        >
-                            <Tab value="projects" on:click=navigate_to_page>
-                                "Projects"
-                            </Tab>
-                            <Tab value="reddit" on:click=navigate_to_page>
-                                "Reddit D/L"
-                            </Tab>
-                            <Tab value="repo" on:click=navigate_to_page>
-                                "Repo D/L"
-                            </Tab>
-                            <Tab value="about" on:click=navigate_to_page>
-                                "About"
-                            </Tab>
-                        </TabList>
-                    </div>
-                    <div class="bg-gray-100">
-                        <Routes fallback=move || "Not found.">
-                            <Route path=StaticSegment("") view=ToProjectPage />
-                            <Route path=StaticSegment("/projects") view=Projects />
-                            <Route path=StaticSegment("/reddit") view=RedditDL />
-                            <Route path=StaticSegment("/repo") view=RepoDL />
-                            <Route path=StaticSegment("/about") view=About />
-                            <Route path=WildcardSegment("any") view=NotFound />
-                        </Routes>
-                    </div>
+                    <Layout position=LayoutPosition::Absolute attr:style=computed_style>
+                        <Scrollbar style="--thaw-scrollbar-size: 8px;">
+                            <div class="flex justify-center item-center mt-1 bg-gray-100 dark:bg-gray-900">
+                                <TabList
+                                    selected_value=tab_value
+                                    class="min-w-72 mb-8 bg-white dark:bg-gray-800 justify-center item-center flex rounded-lg"
+                                >
+                                    <Tab value="projects" on:click=navigate_to_page>
+                                        "Projects"
+                                    </Tab>
+                                    <Tab value="reddit" on:click=navigate_to_page>
+                                        "Reddit D/L"
+                                    </Tab>
+                                    <Tab value="repo" on:click=navigate_to_page>
+                                        "Repo D/L"
+                                    </Tab>
+                                    <Tab value="about" on:click=navigate_to_page>
+                                        "About"
+                                    </Tab>
+                                </TabList>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-900">
+                                <Routes fallback=move || "Not found.">
+                                    <Route path=StaticSegment("") view=ToProjectPage />
+                                    <Route path=StaticSegment("/projects") view=Projects />
+                                    <Route path=StaticSegment("/reddit") view=RedditDL />
+                                    <Route path=StaticSegment("/repo") view=RepoDL />
+                                    <Route path=StaticSegment("/about") view=About />
+                                    <Route path=WildcardSegment("any") view=NotFound />
+                                </Routes>
+                            </div>
+                        </Scrollbar>
+                    </Layout>
                 </ConfigProvider>
             </main>
         </Router>

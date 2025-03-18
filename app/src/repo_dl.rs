@@ -60,7 +60,7 @@ pub fn RepoDL() -> impl IntoView {
 
         <div class="flex items-center justify-center mb-2 px-2">
             <Card class="!gap-0 w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5 !rounded-lg">
-                <h4 class="text-xl font-semibold text-gray-700 mb-2 flex item-center justify-center">
+                <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
                     "Github Release Status"
                 </h4>
 
@@ -83,7 +83,7 @@ pub fn RepoDL() -> impl IntoView {
                 <Button
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
-                    class="mt-2 w-full !text-white font-semibold"
+                    class="mt-2 w-full !text-white dark:!text-gray-100 font-semibold"
                     on_click=move |_| valid_github_link()
                     loading
                 >
@@ -91,7 +91,7 @@ pub fn RepoDL() -> impl IntoView {
                 </Button>
 
                 <Show when=move || !error_resp.get().is_empty()>
-                    <p class="text-red-500 mt-2">{error_resp.get()}</p>
+                    <p class="text-red-500 dark:text-red-400 mt-2">{error_resp.get()}</p>
                 </Show>
             </Card>
 
@@ -114,7 +114,7 @@ pub fn RepoDL() -> impl IntoView {
 
 #[component]
 fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
-    let card_class = "!rounded-lg flex flex-col justify-center items-center h-30 hover:!bg-blue-50 hover:shadow-gray-400 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
+    let card_class = "!rounded-lg flex flex-col justify-center items-center h-30 hover:!bg-blue-50 dark:hover:!bg-blue-900 hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
 
     let show_most_downloaded = move |release: Option<ReleaseInfo>| {
         if let Some(release) = release {
@@ -142,7 +142,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
     };
 
     let show_release_card = move |release: ReleaseInfo| {
-        let card_class = "!rounded-lg hover:!bg-blue-50 hover:shadow-gray-400 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
+        let card_class = "!rounded-lg hover:!bg-blue-50 dark:hover:!bg-blue-900 hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
         let card = view! {
             <Card class=card_class>
                 <h3 class="text-lg font-semibold">{release.tag.clone()}</h3>
@@ -154,9 +154,9 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
                         key=|asset| asset.name.clone()
                         children=move |asset| {
                             view! {
-                                <li class="text-sm text-gray-700 flex justify-between">
+                                <li class="text-sm text-gray-700 dark:text-gray-300 flex justify-between">
                                     <span>{asset.name.clone()}</span>
-                                    <span class="text-gray-500">
+                                    <span class="text-gray-500 dark:text-gray-400">
                                         {asset.download_count.separate_with_commas()} " downloads"
                                     </span>
                                 </li>

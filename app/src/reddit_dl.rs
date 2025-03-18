@@ -56,7 +56,7 @@ pub fn RedditDL() -> impl IntoView {
 
         <div class="flex items-center justify-center px-2">
             <Card class="!gap-0 w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 !rounded-lg">
-                <h4 class="text-xl font-semibold text-gray-700 mb-2 flex item-center justify-center">
+                <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
                     "Reddit Post Downloader"
                 </h4>
                 <Input
@@ -79,7 +79,7 @@ pub fn RedditDL() -> impl IntoView {
                 <Button
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
-                    class="mt-2 w-full !text-white font-semibold"
+                    class="mt-2 w-full !text-white dark:!text-gray-100 font-semibold"
                     on_click=move |_| valid_reddit_link()
                     loading
                 >
@@ -96,7 +96,7 @@ pub fn RedditDL() -> impl IntoView {
                         }
                     }
                 >
-                    <p class="text-red-500 mt-2">{error_resp.get()}</p>
+                    <p class="text-red-500 dark:text-red-400 mt-2">{error_resp.get()}</p>
                 </Show>
             </Card>
         </div>
@@ -128,7 +128,9 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
                         <video class="w-full max-h-60 rounded-md" controls>
                             <source src=urls[0].1.clone() type="video/mp4" />
                         </video>
-                        <p class="mt-2 text-gray-700 text-sm text-center">{filename}</p>
+                        <p class="mt-2 text-gray-700 dark:text-gray-300 text-sm text-center">
+                            {filename}
+                        </p>
                     </div>
                 }
                 .into_any()

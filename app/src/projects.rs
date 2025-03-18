@@ -51,7 +51,9 @@ pub fn Projects() -> impl IntoView {
     view! {
         <Title text="Projects | Rusty Pickle" />
         <div class="w-full max-w-5xl mx-auto p-6">
-            <h2 class="text-3xl font-bold text-center text-gray-800">"My Projects"</h2>
+            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
+                "My Projects"
+            </h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 <For
@@ -61,7 +63,7 @@ pub fn Projects() -> impl IntoView {
                         let project_clone = project.clone();
                         view! {
                             <Card
-                                class="!rounded-lg !shadow-lg h-90 bg-white overflow-hidden flex flex-col cursor-pointer transition-all hover:scale-105 hover:shadow-lg active:scale-95"
+                                class="!rounded-lg !shadow-lg h-90 bg-white dark:bg-gray-800 overflow-hidden flex flex-col cursor-pointer transition-all hover:scale-105 hover:shadow-lg active:scale-95"
                                 on:click=move |_| { open_dialog(project_clone.clone()) }
                             >
                                 <img
@@ -70,10 +72,10 @@ pub fn Projects() -> impl IntoView {
                                 />
 
                                 <div class="p-4 flex flex-col flex-grow">
-                                    <h3 class="text-xl font-semibold text-gray-900">
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                         {project.name.clone()}
                                     </h3>
-                                    <p class="text-gray-700 text-sm mt-2 flex-grow">
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm mt-2 flex-grow">
                                         {project.description.clone()}
                                     </p>
 

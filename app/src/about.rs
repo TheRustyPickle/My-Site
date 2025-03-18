@@ -51,15 +51,15 @@ pub fn About() -> impl IntoView {
         <Title text="About | Rusty Pickle" />
         <div class="flex flex-col gap-2 p-4 w-full p-10">
 
-            <Card class="w-full bg-white !rounded-lg flex !gap-2 flex-col text-center">
-                <h2 class="text-2xl font-bold text-gray-800">"About Me"</h2>
-                <p class="mt-2 text-gray-600 text-lg">{p_1}</p>
-                <p class="mt-2 text-gray-600 text-lg">{p_2}</p>
-                <p class="mt-2 text-gray-600 text-lg">{p_3}</p>
-                <p class="mt-2 text-gray-600 text-lg">{p_4}</p>
+            <Card class="w-full bg-white dark:bg-gray-800 !rounded-lg flex !gap-2 flex-col text-center">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">"About Me"</h2>
+                <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_1}</p>
+                <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_2}</p>
+                <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_3}</p>
+                <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_4}</p>
             </Card>
 
-            <Card class="w-full flex flex-col bg-white !rounded-lg">
+            <Card class="w-full flex flex-col bg-white dark:bg-gray-800 !rounded-lg">
                 <div class="flex flex-wrap justify-center">
                     <For
                         each=move || social_buttons.clone()

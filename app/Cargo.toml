@@ -13,6 +13,8 @@ leptos_actix = { workspace = true, optional = true }
 thaw = { version = "0.4.4", optional = true }
 log.workspace = true
 web-sys = { version = "0.3.77", default-features = false, features = [
+    "Window",
+    "MediaQueryList",
     "Blob",
     "Url",
     "BlobPropertyBag",

@@ -75,7 +75,7 @@ async fn main() -> std::io::Result<()> {
                     let leptos_options = leptos_options.clone();
                     view! {
                         <!DOCTYPE html>
-                        <html lang="en" class="bg-gray-100">
+                        <html lang="en" class="bg-gray-100 dark:bg-gray-900">
                             <head>
                                 <meta charset="utf-8" />
                                 <meta
@@ -86,7 +86,7 @@ async fn main() -> std::io::Result<()> {
                                 <HydrationScripts options=leptos_options.clone() />
                                 <MetaTags />
                             </head>
-                            <body class="bg-gray-100">
+                            <body class="bg-gray-100 dark:bg-gray-900">
                                 <App />
                             </body>
                         </html>
