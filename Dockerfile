@@ -1,4 +1,4 @@
-FROM rust:1.85-bullseye as chef
+FROM rust:1.87-bullseye as chef
 # Use cargo-chef to cache dependencies
 RUN cargo install cargo-chef
 
@@ -26,7 +26,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.11/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
 
-RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/latest/download/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
+RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/download/v0.2.31/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
     && tar -xzf cargo-leptos.tar.gz \
     && cd cargo-leptos-x86_64-unknown-linux-gnu \
     && mv cargo-leptos /usr/local/bin/ \
