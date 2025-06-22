@@ -7,7 +7,10 @@ use leptos::prelude::*;
 use leptos_actix::{generate_route_list, LeptosRoutes};
 use leptos_meta::MetaTags;
 use log::{info, LevelFilter};
+use reqwest::Client;
 use std::env::var;
+use std::time::Duration;
+use tokio::time::sleep;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,6 +32,8 @@ async fn main() -> std::io::Result<()> {
 
     let addr = format!("{address}:{port}");
     let addr_clone = addr.clone();
+
+    tokio::spawn(ping_site());
 
     HttpServer::new(move || {
         // Generate the list of routes in your Leptos App
@@ -110,4 +115,15 @@ async fn favicon(
     Ok(actix_files::NamedFile::open(format!(
         "{site_root}/favicon.ico"
     ))?)
+}
+
+async fn ping_site() {
+    let client = Client::new();
+    let url = "https://rustypickle.onrender.com/";
+
+    info!("Pinger initialized");
+    loop {
+        let _ = client.get(url).send().await;
+        sleep(Duration::from_secs(850)).await;
+    }
 }
