@@ -61,7 +61,7 @@ async fn main() -> std::io::Result<()> {
                     && !path.starts_with("/assets/")
                     && !path.starts_with("/favicon.ico")
                     && path != "/sw.js"
-                    && &ip != "13.43.103.185"
+                    && &ip != "54.254.162.138"
                 {
                     info!("Serving data for path: {path}. Request gotten from: {ip}",);
                 }
@@ -75,6 +75,7 @@ async fn main() -> std::io::Result<()> {
             .service(Files::new("/pkg", format!("{site_root}/pkg")))
             .service(Files::new("/assets", &site_root))
             .service(favicon)
+            .service(robots)
             .leptos_routes(routes, {
                 let leptos_options = leptos_options.clone();
                 move || {
@@ -114,6 +115,17 @@ async fn favicon(
     let site_root = &leptos_options.site_root;
     Ok(actix_files::NamedFile::open(format!(
         "{site_root}/favicon.ico"
+    ))?)
+}
+
+#[actix_web::get("robots.txt")]
+async fn robots(
+    leptos_options: actix_web::web::Data<leptos::config::LeptosOptions>,
+) -> actix_web::Result<actix_files::NamedFile> {
+    let leptos_options = leptos_options.into_inner();
+    let site_root = &leptos_options.site_root;
+    Ok(actix_files::NamedFile::open(format!(
+        "{site_root}/robots.txt"
     ))?)
 }
 
