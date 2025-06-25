@@ -136,6 +136,6 @@ async fn ping_site() {
     info!("Pinger initialized");
     loop {
         let _ = client.get(url).send().await;
-        sleep(Duration::from_secs(850)).await;
+        sleep(Duration::from_secs(100)).await;
     }
 }
