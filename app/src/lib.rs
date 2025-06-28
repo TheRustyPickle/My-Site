@@ -18,7 +18,7 @@ use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;
 use std::collections::HashMap;
-use thaw::{ConfigProvider, Layout, LayoutPosition, Scrollbar, Tab, TabList, Theme};
+use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -107,31 +107,29 @@ pub fn App() -> impl IntoView {
             {set_tab_value()} <main>
                 <ConfigProvider theme>
                     <Layout position=LayoutPosition::Absolute attr:style=computed_style>
-                        <Scrollbar style="--thaw-scrollbar-size: 8px;">
-                            <div class="flex justify-center item-center mt-1 bg-gray-100 dark:bg-gray-900">
-                                <TabList
-                                    selected_value=tab_value
-                                    class="min-w-30 mb-8 bg-white dark:bg-gray-800 justify-center item-center flex rounded-lg"
-                                >
-                                    <Tab value="projects" on:click=navigate_to_page>
-                                        "Projects"
-                                    </Tab>
-                                    <Tab value="about" on:click=navigate_to_page>
-                                        "About"
-                                    </Tab>
-                                </TabList>
-                            </div>
-                            <div class="bg-gray-100 dark:bg-gray-900">
-                                <Routes fallback=move || "Not found.">
-                                    <Route path=StaticSegment("") view=ToProjectPage />
-                                    <Route path=StaticSegment("/projects") view=Projects />
-                                    <Route path=StaticSegment("/reddit") view=RedditDL />
-                                    <Route path=StaticSegment("/repo") view=RepoDL />
-                                    <Route path=StaticSegment("/about") view=About />
-                                    <Route path=WildcardSegment("any") view=NotFound />
-                                </Routes>
-                            </div>
-                        </Scrollbar>
+                        <div class="flex justify-center item-center mt-1 bg-gray-100 dark:bg-gray-900">
+                            <TabList
+                                selected_value=tab_value
+                                class="min-w-30 mb-8 bg-white dark:bg-gray-800 justify-center item-center flex rounded-lg"
+                            >
+                                <Tab value="projects" on:click=navigate_to_page>
+                                    "Projects"
+                                </Tab>
+                                <Tab value="about" on:click=navigate_to_page>
+                                    "About"
+                                </Tab>
+                            </TabList>
+                        </div>
+                        <div class="bg-gray-100 dark:bg-gray-900">
+                            <Routes fallback=move || "Not found.">
+                                <Route path=StaticSegment("") view=ToProjectPage />
+                                <Route path=StaticSegment("/projects") view=Projects />
+                                <Route path=StaticSegment("/reddit") view=RedditDL />
+                                <Route path=StaticSegment("/repo") view=RepoDL />
+                                <Route path=StaticSegment("/about") view=About />
+                                <Route path=WildcardSegment("any") view=NotFound />
+                            </Routes>
+                        </div>
                     </Layout>
                 </ConfigProvider>
             </main>

@@ -50,7 +50,7 @@ pub fn Projects() -> impl IntoView {
 
     view! {
         <Title text="Projects | Rusty Pickle" />
-        <div class="w-full max-w-5xl mx-auto p-6">
+        <div class="w-full max-w-5xl mx-auto p-4">
             <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
                 "My Projects"
             </h2>
