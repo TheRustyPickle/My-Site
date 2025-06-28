@@ -10,10 +10,10 @@ use std::env::var;
 use std::fs;
 
 pub async fn get_reddit_url(post_id: &str) -> Result<Downloads> {
-    let username = var("USERNAME").unwrap();
-    let password = var("PASSWORD").unwrap();
-    let client_id = var("CLIENT_TOKEN").unwrap();
-    let secret_id = var("SECRET_TOKEN").unwrap();
+    let username = var("USERNAME")?;
+    let password = var("PASSWORD")?;
+    let client_id = var("CLIENT_TOKEN")?;
+    let secret_id = var("SECRET_TOKEN")?;
 
     let client = Reddit::new("myapp/0.1", &client_id, &secret_id)
         .username(&username)

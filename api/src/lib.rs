@@ -8,6 +8,9 @@ pub mod reddit;
 #[cfg(feature = "ssr")]
 pub mod github;
 
+#[cfg(feature = "ssr")]
+pub mod message;
+
 #[server]
 pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnError> {
     use crate::reddit::get_reddit_url;
@@ -34,6 +37,20 @@ pub async fn github_checker(
         Ok(data) => Ok(data),
         Err(e) => {
             error!("Failed to get repo release summary. Reason: {e}");
+            Err(ServerFnError::new(e))
+        }
+    }
+}
+
+#[server]
+pub async fn message_drop(text: String) -> Result<(), ServerFnError> {
+    use crate::message::send_message;
+    use log::error;
+
+    match send_message(text).await {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            error!("Failed to send message. Reason: {e}");
             Err(ServerFnError::new(e))
         }
     }
