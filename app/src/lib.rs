@@ -58,11 +58,9 @@ pub fn App() -> impl IntoView {
         move || {
             let path = location.pathname.get();
             tab_value.set(match path.as_str() {
-                "/reddit" => "reddit".to_string(),
-                "/repo" => "repo".to_string(),
                 "/about" => "about".to_string(),
                 "/" | "/projects" => "projects".to_string(),
-                _ => "projects".to_string(),
+                _ => "".to_string(),
             });
         }
     };
@@ -71,8 +69,6 @@ pub fn App() -> impl IntoView {
         let selected_value = tab_value.get();
         let value_path = match selected_value.as_str() {
             "projects" => "/projects",
-            "reddit" => "/reddit",
-            "repo" => "/repo",
             "about" => "/about",
             _ => "/not_found",
         };
@@ -115,16 +111,10 @@ pub fn App() -> impl IntoView {
                             <div class="flex justify-center item-center mt-1 bg-gray-100 dark:bg-gray-900">
                                 <TabList
                                     selected_value=tab_value
-                                    class="min-w-72 mb-8 bg-white dark:bg-gray-800 justify-center item-center flex rounded-lg"
+                                    class="min-w-30 mb-8 bg-white dark:bg-gray-800 justify-center item-center flex rounded-lg"
                                 >
                                     <Tab value="projects" on:click=navigate_to_page>
                                         "Projects"
-                                    </Tab>
-                                    <Tab value="reddit" on:click=navigate_to_page>
-                                        "Reddit D/L"
-                                    </Tab>
-                                    <Tab value="repo" on:click=navigate_to_page>
-                                        "Repo D/L"
                                     </Tab>
                                     <Tab value="about" on:click=navigate_to_page>
                                         "About"

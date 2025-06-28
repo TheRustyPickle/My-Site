@@ -35,15 +35,15 @@ pub fn About() -> impl IntoView {
         },
     ];
 
-    let p_1 = "I'm a hobbyist programmer who enjoys building projects that I find useful.";
+    let p_1 = "I'm a hobbyist programmer who enjoys building projects that I find useful and contributing to open source.";
 
     let p_2 = "My background is in marketing, but programming has been a big part of what I do, \
         whether through personal projects or small tools I've made along the way.";
 
     let p_3 = "I love experimenting with new technologies and hope to transition into software development in the future. \
-        While I've worked with various languages, Rust has been my favorite for its reliability and performance.";
+        While I've worked with a few languages, Rust has been my favorite for its reliability and performance.";
 
-    let p_4 = "For now, I just keep building things and having fun with it. I'm always up for a chat about programming, \
+    let p_4 = "I'm always up for a chat about programming, \
         open-source, or whatever interesting project \
         you're working on—feel free to reach out!";
 

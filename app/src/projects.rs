@@ -159,7 +159,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
                             <a href=demo_link target=a_target>
                                 <Button
                                     appearance=ButtonAppearance::Primary
-                                    icon=icondata::FaGithubBrands
+                                    icon=icondata::MdiLinkVariant
                                 >
                                     "Live Demo"
                                 </Button>
