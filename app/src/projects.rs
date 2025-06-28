@@ -143,7 +143,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
 
             <div class="flex flex-wrap gap-3 mt-4 justify-center items-center">
                 <a href=source_link target="_blank">
-                    <Button appearance=ButtonAppearance::Primary icon=icondata::AiGithubFilled>
+                    <Button appearance=ButtonAppearance::Primary icon=icondata::FaGithubBrands>
                         "View Source"
                     </Button>
                 </a>
@@ -159,7 +159,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
                             <a href=demo_link target=a_target>
                                 <Button
                                     appearance=ButtonAppearance::Primary
-                                    icon=icondata::AiGithubFilled
+                                    icon=icondata::FaGithubBrands
                                 >
                                     "Live Demo"
                                 </Button>
@@ -170,7 +170,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
 
                 <Button
                     appearance=ButtonAppearance::Primary
-                    icon=icondata::CgClose
+                    icon=icondata::MdiClose
                     on:click=move |_| dialog_open.set(false)
                 >
                     "Close"

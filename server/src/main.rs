@@ -41,7 +41,7 @@ async fn main() -> std::io::Result<()> {
         let leptos_options = &conf.leptos_options;
         let site_root = leptos_options.site_root.clone().to_string();
 
-        info!("listening on http://{}", addr_clone);
+        info!("listening on http://{addr_clone}");
 
         App::new()
             .wrap_fn(|req, srv| {

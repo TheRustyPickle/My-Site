@@ -76,7 +76,7 @@ pub fn RepoDL() -> impl IntoView {
                     }
                 >
                     <InputPrefix slot>
-                        <Icon icon=icondata::AiGithubOutlined />
+                        <Icon icon=icondata::FaGithubBrands />
                     </InputPrefix>
                 </Input>
 

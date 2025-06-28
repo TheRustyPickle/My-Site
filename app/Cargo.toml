@@ -20,7 +20,7 @@ web-sys = { version = "0.3.77", default-features = false, features = [
     "BlobPropertyBag",
 ] }
 actix-web = { workspace = true, optional = true }
-icondata = "0.5.0"
+icondata = { version = "0.5.0", default-features = false, features = ["material-design-icons", "font-awesome", "tabler-icons"] }
 thousands = "0.2.0"
 api = { path = "../api" }
 shared = { path = "../shared" }

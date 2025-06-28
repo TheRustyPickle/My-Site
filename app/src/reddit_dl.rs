@@ -72,7 +72,7 @@ pub fn RedditDL() -> impl IntoView {
                 >
 
                     <InputPrefix slot>
-                        <Icon icon=icondata::BsReddit />
+                        <Icon icon=icondata::FaRedditBrands />
                     </InputPrefix>
                 </Input>
 

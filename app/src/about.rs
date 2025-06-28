@@ -14,12 +14,12 @@ struct Social {
 pub fn About() -> impl IntoView {
     let social_buttons = [
         Social {
-            icon: icondata::AiGithubOutlined,
+            icon: icondata::FaGithubBrands,
             name: "GitHub".to_string(),
             link: "https://github.com/TheRustyPickle".to_string(),
         },
         Social {
-            icon: icondata::BsDiscord,
+            icon: icondata::FaDiscordBrands,
             name: "Discord".to_string(),
             link: "https://discord.com/users/406917444381179905".to_string(),
         },
