@@ -626,7 +626,7 @@ fn get_project_list() -> Vec<Project> {
     };
     let reddit_dl = Project {
         title_image: Some(String::from("/assets/dl_reddit.png")),
-        name: String::from("Redit D/L"),
+        name: String::from("Reddit D/L"),
         description: String::from("A simple web app to download content from a reddit post"),
         badges: vec![
             "Rust".to_string(),
