@@ -51,7 +51,7 @@ pub fn RepoDL() -> impl IntoView {
         if let Some((username, repo)) = extract_github_info(&link.get()) {
             get_release_status(username, repo);
         } else {
-            set_error.set(String::from("No valid reddit link was found."));
+            set_error.set(String::from("No valid github link was found."));
         }
     };
 

@@ -1,4 +1,4 @@
-FROM rust:1.87-bullseye as chef
+FROM rust:1.90-bullseye as chef
 # Use cargo-chef to cache dependencies
 RUN cargo install cargo-chef
 
