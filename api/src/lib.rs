@@ -48,7 +48,7 @@ pub async fn message_drop(text: String) -> Result<(), ServerFnError> {
     use log::error;
 
     match send_message(text).await {
-        Ok(_) => Ok(()),
+        Ok(()) => Ok(()),
         Err(e) => {
             error!("Failed to send message. Reason: {e}");
             Err(ServerFnError::new(e))

@@ -10,7 +10,7 @@ use crate::utils::create_blob_url;
 
 #[component]
 pub fn RedditDL() -> impl IntoView {
-    let link = RwSignal::new(String::from(""));
+    let link = RwSignal::new(String::new());
     let (loading, set_loading) = signal(false);
     let (downloadables, set_downloadables) = signal(None);
     let (error_resp, set_error) = signal(String::new());
@@ -25,14 +25,14 @@ pub fn RedditDL() -> impl IntoView {
             match result {
                 Ok(downloadables) => set_downloadables.set(Some(downloadables)),
                 Err(e) => set_error.set(e.to_string()),
-            };
+            }
             set_loading.set(false);
         });
     };
 
     let valid_reddit_link = move || {
         if let Some(post_id) = extract_reddit_id(&link.get()) {
-            fetch_downloads(post_id.to_string())
+            fetch_downloads(post_id.to_string());
         } else {
             set_error.set(String::from("No valid reddit link was found."));
         }
@@ -66,7 +66,7 @@ pub fn RedditDL() -> impl IntoView {
                     size=InputSize::Large
                     on:keypress=move |e| {
                         if e.char_code() == 13 {
-                            valid_reddit_link()
+                            valid_reddit_link();
                         }
                     }
                 >
@@ -121,7 +121,9 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
 
     let render_video = move || {
         if let Some(urls) = blob_urls.get() {
-            if !urls.is_empty() {
+            if urls.is_empty() {
+                view! { "" }.into_any()
+            } else {
                 let filename = format!("File: {}.{}", urls[0].0.file_name, urls[0].0.extension);
                 view! {
                     <div class="w-full max-w-md mx-auto">
@@ -134,8 +136,6 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
                     </div>
                 }
                 .into_any()
-            } else {
-                view! { "" }.into_any()
             }
         } else {
             view! { "" }.into_any()

@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
 
 #[component]
+#[must_use]
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
@@ -60,7 +61,7 @@ pub fn App() -> impl IntoView {
             tab_value.set(match path.as_str() {
                 "/about" => "about".to_string(),
                 "/" | "/projects" => "projects".to_string(),
-                _ => "".to_string(),
+                _ => String::new(),
             });
         }
     };

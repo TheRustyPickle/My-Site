@@ -155,7 +155,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
                 }>
                     {
                         let demo_link = demo_link.clone().unwrap();
-                        let a_target = if demo_link.starts_with("/") { "" } else { "_blank" };
+                        let a_target = if demo_link.starts_with('/') { "" } else { "_blank" };
                         view! {
                             <a href=demo_link target=a_target>
                                 <Button

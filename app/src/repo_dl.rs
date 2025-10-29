@@ -42,14 +42,14 @@ pub fn RepoDL() -> impl IntoView {
                     set_release_summary.set(Some(release));
                 }
                 Err(e) => set_error.set(e.to_string()),
-            };
+            }
             set_loading.set(false);
         });
     };
 
     let valid_github_link = move || {
         if let Some((username, repo)) = extract_github_info(&link.get()) {
-            get_release_status(username, repo)
+            get_release_status(username, repo);
         } else {
             set_error.set(String::from("No valid reddit link was found."));
         }
@@ -71,7 +71,7 @@ pub fn RepoDL() -> impl IntoView {
                     size=InputSize::Large
                     on:keypress=move |e| {
                         if e.char_code() == 13 {
-                            valid_github_link()
+                            valid_github_link();
                         }
                     }
                 >

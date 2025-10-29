@@ -1,5 +1,5 @@
 use actix_files::Files;
-use actix_web::*;
+use actix_web::{dev, web, App, Handler, HttpServer};
 use app::App;
 use dev::Service;
 use leptos::config::get_configuration;

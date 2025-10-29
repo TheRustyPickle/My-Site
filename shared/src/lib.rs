@@ -1,5 +1,6 @@
 pub mod models;
 
+#[must_use]
 pub fn extract_reddit_id(url: &str) -> Option<&str> {
     if !url.contains("reddit.com/r/") {
         return None;
@@ -10,6 +11,7 @@ pub fn extract_reddit_id(url: &str) -> Option<&str> {
     parts.get(index + 1).copied()
 }
 
+#[must_use]
 pub fn extract_github_info(url: &str) -> Option<(String, String)> {
     let prefix = "github.com/";
 
