@@ -1,4 +1,4 @@
-FROM rust:1.90-bullseye as chef
+FROM rust:1.90-bookworm as chef
 # Use cargo-chef to cache dependencies
 RUN cargo install cargo-chef
 
@@ -48,7 +48,7 @@ ENV LEPTOS_TAILWIND_VERSION="4.0.11"
 # Build the app with cargo-leptos
 RUN cargo leptos build --release -vv
 
-FROM rust:1.90-bullseye AS runtime
+FROM rust:1.90-bookworm AS runtime
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg \
