@@ -96,12 +96,11 @@ fn extract_image_info(url: &str) -> Option<(String, String)> {
     let valid_extensions = ["jpg", "jpeg", "png", "gif", "webp"];
     let url_parts: Vec<&str> = url.split('/').collect();
 
-    if let Some(last_part) = url_parts.last() {
-        if let Some((filename, extension)) = last_part.rsplit_once('.') {
-            if valid_extensions.contains(&extension) {
-                return Some((filename.to_string(), extension.to_string()));
-            }
-        }
+    if let Some(last_part) = url_parts.last()
+        && let Some((filename, extension)) = last_part.rsplit_once('.')
+        && valid_extensions.contains(&extension)
+    {
+        return Some((filename.to_string(), extension.to_string()));
     }
 
     None

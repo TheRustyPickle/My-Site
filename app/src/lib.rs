@@ -152,7 +152,7 @@ fn NotFound() -> impl IntoView {
 }
 
 #[component]
-fn ToProjectPage() {
+fn ToProjectPage() -> impl IntoView {
     let navigate = use_navigate();
 
     Effect::new(move |_| {

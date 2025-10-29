@@ -11,6 +11,7 @@ enum ContentProject {
     Talon,
     Funnel,
     Chirp,
+    Crane,
     RepoDL,
     RedditDL,
     Table,
@@ -699,11 +700,28 @@ fn get_project_list() -> Vec<Project> {
         content: pulse_content,
     };
 
+    let crane_content = ProjectContent {
+        content: ContentProject::Crane,
+        demo_link: None,
+        images: Some(vec![String::from("/assets/crane.png")]),
+        source_link: String::from("https://github.com/TheRustyPickle/Crane"),
+    };
+    let crane = Project {
+        title_image: Some(String::from("/assets/crane.png")),
+        name: String::from("Crane"),
+        description: String::from(
+            "A GUI tool to view, update, or remove binaries installed with cargo install",
+        ),
+        badges: vec!["Rust".to_string(), "Iced".to_string(), "GUI".to_string()],
+        content: crane_content,
+    };
+
     vec![
         rex,
         talon,
         funnel,
         chirp,
+        crane,
         repo_dl,
         reddit_dl,
         selectable_table,
@@ -970,6 +988,32 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
                     " No bot restarts required when modifying schedules—only bot settings need a restart."
                 </li>
             </ul>
+        }.into_any(),
+        ContentProject::Crane => view! {
+            <p class="text-lg font-medium">
+                "Crane is a simple GUI application built with Iced for managing binaries installed with cargo install. It lets you check for updates, reinstall, or remove installed crates through a minimal interface inspired by pamac-manager."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"Features"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>
+                    "View all installed Cargo binaries"
+                </li>
+                <li>
+                    "Enable or disable default and optional features"
+                </li>
+                <li>
+                    "Install or update crates directly from a git source (--git flag)"
+                </li>
+                <li>
+                    "Remove installed crates"
+                </li>
+                <li>
+                    "View real-time installation logs"
+                </li>
+            </ul>
+
         }.into_any(),
     }
 }
