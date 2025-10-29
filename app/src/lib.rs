@@ -102,6 +102,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Stylesheet id="leptos" href="/pkg/my_site.css" />
+        <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
         <Title text="Rusty Pickle" />
 
         <Router>
