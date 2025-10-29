@@ -26,7 +26,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.11/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
 
-RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/download/v0.2.31/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
+RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/download/v0.2.46/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
     && tar -xzf cargo-leptos.tar.gz \
     && cd cargo-leptos-x86_64-unknown-linux-gnu \
     && mv cargo-leptos /usr/local/bin/ \
@@ -48,7 +48,7 @@ ENV LEPTOS_TAILWIND_VERSION="4.0.11"
 # Build the app with cargo-leptos
 RUN cargo leptos build --release -vv
 
-FROM rust:1-bullseye AS runtime
+FROM rust:1.90-bullseye AS runtime
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg \
