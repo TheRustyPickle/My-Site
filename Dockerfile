@@ -60,12 +60,15 @@ RUN apt-get update -y \
 COPY --from=builder /app/target/release/server /app/
 COPY --from=builder /app/target/site /app/site
 COPY --from=builder /app/Cargo.toml /app/
+COPY --from=builder /app/server/src/ca.pem /app/ca/ca.pem
 
 # Set environment variables
+ENV CERT_LOCATION="/app/ca/ca.pem"
 ENV RUST_LOG="info"
 ENV LEPTOS_SITE_ADDR="0.0.0.0:8080"
 ENV LEPTOS_SITE_ROOT="site"
 ENV IP=0.0.0.0
+ENV PORT=10000
 ENV ADDRESS=0.0.0.0
 
 # Expose the port
