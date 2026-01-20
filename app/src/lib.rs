@@ -10,10 +10,10 @@ use leptos::task::spawn_local;
 
 use about::About;
 use leptos::prelude::*;
-use leptos_meta::{provide_meta_context, Stylesheet, Title};
+use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
-use leptos_router::{path, StaticSegment, WildcardSegment};
+use leptos_router::{StaticSegment, WildcardSegment, path};
 use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;

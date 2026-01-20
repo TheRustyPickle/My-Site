@@ -4,7 +4,7 @@ use vial_shared::EncryptedPayload;
 pub async fn get_secret(id: String) -> Result<EncryptedPayload> {
     let client = reqwest::Client::new();
 
-    let url = format!("http://localhost:8080/api/secrets/{id}");
+    let url = format!("https://rustypickle.onrender.com/api/secrets/{id}");
 
     let response = client
         .get(url)

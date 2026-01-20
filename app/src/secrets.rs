@@ -29,7 +29,7 @@ pub fn Secrets() -> impl IntoView {
         let (status, error) = failed_payload.get();
 
         if status {
-            view! { <p>{format!("Failed to fetch secret. Error {error}")}</p> }.into_any()
+            view! { <p class="text-red-500 dark:text-red-400">{format!("Failed to fetch secret. Error {error}")}</p> }.into_any()
         } else if !status && payload.get().is_none() {
             view! {
                 <div>

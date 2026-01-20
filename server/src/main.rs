@@ -1,19 +1,19 @@
 use actix_files::Files;
 use actix_web::web::{Data, Json, Path};
-use actix_web::{dev, web, App, HttpResponse, HttpServer};
+use actix_web::{App, HttpResponse, HttpServer, dev, web};
 use app::App;
 use dev::Service;
 use leptos::config::get_configuration;
 use leptos::prelude::*;
-use leptos_actix::{generate_route_list, LeptosRoutes};
+use leptos_actix::{LeptosRoutes, generate_route_list};
 use leptos_meta::MetaTags;
-use log::{error, info, LevelFilter};
+use log::{LevelFilter, error, info};
 use reqwest::Client;
 use std::env::var;
 use std::time::Duration;
 use tokio::time::sleep;
 use vial_shared::CreateSecretRequest;
-use vial_srv::db::{get_connection, Handler};
+use vial_srv::db::{Handler, get_connection};
 use vial_srv::errors::ServerError;
 
 const MAX_SIZE: usize = 1024 * 1024 * 5 + 200;
