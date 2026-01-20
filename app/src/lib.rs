@@ -2,6 +2,7 @@ mod about;
 mod projects;
 mod reddit_dl;
 mod repo_dl;
+mod secrets;
 mod utils;
 
 #[allow(unused_imports)]
@@ -9,14 +10,14 @@ use leptos::task::spawn_local;
 
 use about::About;
 use leptos::prelude::*;
-
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
-use leptos_router::{StaticSegment, WildcardSegment};
+use leptos_router::{path, StaticSegment, WildcardSegment};
 use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;
+use secrets::Secrets;
 use std::collections::HashMap;
 use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
 
@@ -129,6 +130,7 @@ pub fn App() -> impl IntoView {
                                 <Route path=StaticSegment("/reddit") view=RedditDL />
                                 <Route path=StaticSegment("/repo") view=RepoDL />
                                 <Route path=StaticSegment("/about") view=About />
+                                <Route path=path!("/secrets/:id") view=Secrets />
                                 <Route path=WildcardSegment("any") view=NotFound />
                             </Routes>
                         </div>

@@ -64,7 +64,7 @@ pub fn Projects() -> impl IntoView {
                         let project_clone = project.clone();
                         view! {
                             <Card
-                                class="!rounded-lg !shadow-lg h-90 bg-white dark:bg-gray-800 overflow-hidden flex flex-col cursor-pointer transition-all hover:scale-105 hover:shadow-lg active:scale-95"
+                                class="rounded-lg! shadow-lg! h-90 bg-white dark:bg-gray-800 overflow-hidden flex flex-col cursor-pointer transition-all hover:scale-105 hover:shadow-lg active:scale-95"
                                 on:click=move |_| { open_dialog(project_clone.clone()) }
                             >
                                 <img
@@ -72,11 +72,11 @@ pub fn Projects() -> impl IntoView {
                                     class="w-full h-40 object-cover transition-all hover:brightness-75"
                                 />
 
-                                <div class="p-4 flex flex-col flex-grow">
+                                <div class="p-4 flex flex-col grow">
                                     <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                         {project.name.clone()}
                                     </h3>
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm mt-2 flex-grow">
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm mt-2 grow">
                                         {project.description.clone()}
                                     </p>
 
@@ -268,7 +268,7 @@ fn Carousel(images: Option<Vec<String>>) -> impl IntoView {
     };
 
     view! {
-        <div class="flex w-full w-3xl flex-1 justify-center item-center">
+        <div class="flex w-full flex-1 justify-center item-center">
 
             <div class="carousel-root w-full">
                 // CSS for animations - scoped with unique class name
@@ -997,23 +997,12 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
             <p class="mt-4 text-lg font-semibold">"Features"</p>
 
             <ul class="mt-2 list-disc list-inside space-y-2">
-                <li>
-                    "View all installed Cargo binaries"
-                </li>
-                <li>
-                    "Enable or disable default and optional features"
-                </li>
-                <li>
-                    "Install or update crates directly from a git source (--git flag)"
-                </li>
-                <li>
-                    "Remove installed crates"
-                </li>
-                <li>
-                    "View real-time installation logs"
-                </li>
+                <li>"View all installed Cargo binaries"</li>
+                <li>"Enable or disable default and optional features"</li>
+                <li>"Install or update crates directly from a git source (--git flag)"</li>
+                <li>"Remove installed crates"</li>
+                <li>"View real-time installation logs"</li>
             </ul>
-
         }.into_any(),
     }
 }

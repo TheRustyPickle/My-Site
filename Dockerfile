@@ -23,7 +23,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 
-RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.11/tailwindcss-linux-x64 \
+RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.18/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
 
 RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/download/v0.2.46/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
@@ -43,7 +43,7 @@ WORKDIR /app
 COPY . .
 
 
-ENV LEPTOS_TAILWIND_VERSION="4.0.11"
+ENV LEPTOS_TAILWIND_VERSION="4.1.18"
 
 # Build the app with cargo-leptos
 RUN cargo leptos build --release -vv

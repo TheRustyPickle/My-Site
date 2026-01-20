@@ -55,7 +55,7 @@ pub fn RedditDL() -> impl IntoView {
         <Title text="Reddit D/L | Rusty Pickle" />
 
         <div class="flex items-center justify-center px-2">
-            <Card class="!gap-0 w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 !rounded-lg">
+            <Card class="gap-0! w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 rounded-lg!">
                 <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
                     "Reddit Post Downloader"
                 </h4>
@@ -79,7 +79,7 @@ pub fn RedditDL() -> impl IntoView {
                 <Button
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
-                    class="mt-2 w-full !text-white dark:!text-gray-100 font-semibold"
+                    class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
                     on_click=move |_| valid_reddit_link()
                     loading
                 >

@@ -1,6 +1,7 @@
 use leptos::prelude::ServerFnError;
 use leptos::server;
 use shared::models::{Downloads, RepoReleasesSummary};
+use vial_shared::EncryptedPayload;
 
 #[cfg(feature = "ssr")]
 pub mod reddit;
@@ -10,6 +11,9 @@ pub mod github;
 
 #[cfg(feature = "ssr")]
 pub mod message;
+
+#[cfg(feature = "ssr")]
+pub mod secret;
 
 #[server]
 pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnError> {
@@ -51,6 +55,20 @@ pub async fn message_drop(text: String) -> Result<(), ServerFnError> {
         Ok(()) => Ok(()),
         Err(e) => {
             error!("Failed to send message. Reason: {e}");
+            Err(ServerFnError::new(e))
+        }
+    }
+}
+
+#[server]
+pub async fn get_secret(id: String) -> Result<EncryptedPayload, ServerFnError> {
+    use crate::secret::get_secret;
+    use log::error;
+
+    match get_secret(id).await {
+        Ok(data) => Ok(data),
+        Err(e) => {
+            error!("Failed to get secret. Reason: {e}");
             Err(ServerFnError::new(e))
         }
     }

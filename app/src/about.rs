@@ -53,7 +53,7 @@ pub fn About() -> impl IntoView {
         <Title text="About | Rusty Pickle" />
         <div class="flex flex-col gap-2 p-4">
 
-            <Card class="w-full bg-white dark:bg-gray-800 !rounded-lg flex !gap-2 flex-col text-center">
+            <Card class="w-full bg-white dark:bg-gray-800 rounded-lg! flex gap-2! flex-col text-center">
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">"About Me"</h2>
                 <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_1}</p>
                 <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_2}</p>
@@ -61,7 +61,7 @@ pub fn About() -> impl IntoView {
                 <p class="mt-2 text-gray-600 dark:text-gray-300 text-lg">{p_4}</p>
             </Card>
 
-            <Card class="w-full flex flex-col bg-white dark:bg-gray-800 !rounded-lg">
+            <Card class="w-full flex flex-col bg-white dark:bg-gray-800 rounded-lg!">
                 <div class="flex flex-wrap justify-center">
                     <For
                         each=move || social_buttons.clone()
@@ -74,7 +74,7 @@ pub fn About() -> impl IntoView {
                                         shape=ButtonShape::Rounded
                                         appearance=ButtonAppearance::Transparent
                                         size=ButtonSize::Large
-                                        class="!transition-all !duration-200 hover:scale-105 relative hover:z-10"
+                                        class="transition-all! duration-200! hover:scale-105 relative hover:z-10"
                                     >
                                         {social.name.clone()}
                                     </Button>
@@ -102,7 +102,7 @@ pub fn MessageBox() -> impl IntoView {
     };
 
     view! {
-        <Card class="w-full bg-white dark:bg-gray-800 !rounded-lg flex flex-col gap-4 p-4 sm:p-6">
+        <Card class="w-full bg-white dark:bg-gray-800 rounded-lg! flex flex-col gap-4 p-4 sm:p-6">
             <h3 class="text-xl font-semibold text-center text-gray-800 dark:text-gray-200">
                 Drop me a message
             </h3>

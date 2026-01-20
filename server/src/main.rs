@@ -1,16 +1,22 @@
 use actix_files::Files;
-use actix_web::{dev, web, App, HttpServer};
+use actix_web::web::{Data, Json, Path};
+use actix_web::{dev, web, App, HttpResponse, HttpServer};
 use app::App;
 use dev::Service;
 use leptos::config::get_configuration;
 use leptos::prelude::*;
 use leptos_actix::{generate_route_list, LeptosRoutes};
 use leptos_meta::MetaTags;
-use log::{info, LevelFilter};
+use log::{error, info, LevelFilter};
 use reqwest::Client;
 use std::env::var;
 use std::time::Duration;
 use tokio::time::sleep;
+use vial_shared::CreateSecretRequest;
+use vial_srv::db::{get_connection, Handler};
+use vial_srv::errors::ServerError;
+
+const MAX_SIZE: usize = 1024 * 1024 * 5 + 200;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -32,6 +38,9 @@ async fn main() -> std::io::Result<()> {
 
     let addr = format!("{address}:{port}");
     let addr_clone = addr.clone();
+
+    let db_url = var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let db_handler = get_connection(&db_url).await;
 
     tokio::spawn(ping_site());
 
@@ -62,6 +71,7 @@ async fn main() -> std::io::Result<()> {
                     && !path.starts_with("/favicon.ico")
                     && path != "/sw.js"
                     && &ip != "54.254.162.138"
+                    && ip != "74.220.52.2"
                 {
                     info!("Serving data for path: {path}. Request gotten from: {ip}",);
                 }
@@ -72,10 +82,16 @@ async fn main() -> std::io::Result<()> {
                     Ok(res)
                 }
             })
+            .app_data(Data::new(db_handler.clone()))
             .service(Files::new("/pkg", format!("{site_root}/pkg")))
             .service(Files::new("/assets", &site_root))
             .service(favicon)
             .service(robots)
+            .service(
+                web::scope("/secrets/api/")
+                    .route("/{id}", web::get().to(get_secret))
+                    .route("", web::post().to(create_secret)),
+            )
             .leptos_routes(routes, {
                 let leptos_options = leptos_options.clone();
                 move || {
@@ -137,5 +153,58 @@ async fn ping_site() {
     loop {
         let _ = client.get(url).send().await;
         sleep(Duration::from_secs(100)).await;
+    }
+}
+
+async fn get_secret(id: Path<String>, db_handler: Data<Handler>) -> HttpResponse {
+    let id = id.into_inner();
+    info!("Getting secret with id: {id}");
+
+    db_handler
+        .get_secret(&id)
+        .await
+        .map_or_else(server_error_to_response, |secret| {
+            if let Some(secret) = secret {
+                HttpResponse::Ok().json(secret)
+            } else {
+                HttpResponse::NotFound().body("secret not found")
+            }
+        })
+}
+
+async fn create_secret(
+    db_handler: Data<Handler>,
+    payload: Json<CreateSecretRequest>,
+) -> HttpResponse {
+    let payload = payload.into_inner();
+
+    let max_size = var("MAX_SIZE")
+        .ok()
+        .and_then(|p| p.parse::<usize>().ok())
+        .unwrap_or(MAX_SIZE);
+
+    if payload.ciphertext.len() > max_size {
+        return HttpResponse::PayloadTooLarge()
+            .body("Payload too large. Max size is {MAX_SIZE} bytes");
+    }
+    db_handler
+        .new_secret(payload)
+        .await
+        .map_or_else(server_error_to_response, |id| {
+            info!("Created secret with id: {id}");
+            HttpResponse::Ok().json(id)
+        })
+}
+
+fn server_error_to_response(e: ServerError) -> HttpResponse {
+    match e {
+        ServerError::ViewAndExpireEmpty
+        | ServerError::InvalidExpire
+        | ServerError::InvalidViewCount => HttpResponse::BadRequest().body(e.to_string()),
+
+        ServerError::DatabaseError(e) => {
+            error!("Database error: {e}");
+            HttpResponse::InternalServerError().body("internal server error")
+        }
     }
 }
