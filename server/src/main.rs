@@ -83,15 +83,15 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(Data::new(db_handler.clone()))
+            .service(
+                web::scope("/api/secrets")
+                    .route("/{id}", web::get().to(get_secret))
+                    .route("", web::post().to(create_secret)),
+            )
             .service(Files::new("/pkg", format!("{site_root}/pkg")))
             .service(Files::new("/assets", &site_root))
             .service(favicon)
             .service(robots)
-            .service(
-                web::scope("/secrets/api/")
-                    .route("/{id}", web::get().to(get_secret))
-                    .route("", web::post().to(create_secret)),
-            )
             .leptos_routes(routes, {
                 let leptos_options = leptos_options.clone();
                 move || {

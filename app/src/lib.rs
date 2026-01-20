@@ -124,7 +124,7 @@ pub fn App() -> impl IntoView {
                             </TabList>
                         </div>
                         <div class="bg-gray-100 dark:bg-gray-900">
-                            <Routes fallback=move || "Not found.">
+                            <Routes fallback=move || NotFound>
                                 <Route path=StaticSegment("") view=ToProjectPage />
                                 <Route path=StaticSegment("/projects") view=Projects />
                                 <Route path=StaticSegment("/reddit") view=RedditDL />
