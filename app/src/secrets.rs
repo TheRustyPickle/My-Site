@@ -6,6 +6,7 @@ use leptos::task::spawn_local;
 use leptos_router::hooks::use_params_map;
 use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use thaw::{
     Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize, Radio,
     RadioGroup, Spinner,
@@ -70,9 +71,9 @@ pub fn Secrets() -> impl IntoView {
     let inputted_key = RwSignal::new(String::new());
     let radio_value = RwSignal::new(String::from("Password"));
 
-    let (pending, set_pending) = signal(None::<FullSecretV1>);
+    let (pending, set_pending) = signal(None::<Arc<FullSecretV1>>);
 
-    let (decrypted_secret, set_decrypted_secret) = signal(None::<FullSecretV1>);
+    let (decrypted_secret, set_decrypted_secret) = signal(None::<Arc<FullSecretV1>>);
     let (decrypt_error, set_error) = signal(String::new());
 
     Effect::new(move |_| {
@@ -150,7 +151,7 @@ pub fn Secrets() -> impl IntoView {
             let secret = decrypt_result.unwrap();
 
             loading.set(false);
-            set_pending.set(Some(secret));
+            set_pending.set(Some(Arc::new(secret)));
         });
     };
 
