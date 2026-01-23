@@ -59,7 +59,7 @@ pub fn RepoDL() -> impl IntoView {
         <Title text="GitHub D/L | Rusty Pickle" />
 
         <div class="flex items-center justify-center mb-2 px-2">
-            <Card class="!gap-0 w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5 !rounded-lg">
+            <Card class="gap-0! w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5 rounded-lg!">
                 <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
                     "Github Release Status"
                 </h4>
@@ -83,7 +83,7 @@ pub fn RepoDL() -> impl IntoView {
                 <Button
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
-                    class="mt-2 w-full !text-white dark:!text-gray-100 font-semibold"
+                    class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
                     on_click=move |_| valid_github_link()
                     loading
                 >
@@ -114,7 +114,7 @@ pub fn RepoDL() -> impl IntoView {
 
 #[component]
 fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
-    let card_class = "!rounded-lg flex flex-col justify-center items-center h-30 hover:!bg-blue-50 dark:hover:!bg-blue-900 hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
+    let card_class = "rounded-lg! flex flex-col justify-center items-center h-30 hover:bg-blue-50! dark:hover:bg-blue-900! hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:shadow-xl! transition-all! duration-200! hover:scale-105 relative hover:z-10";
 
     let show_most_downloaded = move |release: Option<ReleaseInfo>| {
         if let Some(release) = release {
@@ -142,7 +142,7 @@ fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
     };
 
     let show_release_card = move |release: ReleaseInfo| {
-        let card_class = "!rounded-lg hover:!bg-blue-50 dark:hover:!bg-blue-900 hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:!shadow-xl !transition-all !duration-200 hover:scale-105 relative hover:z-10";
+        let card_class = "rounded-lg! hover:bg-blue-50! dark:hover:bg-blue-900! hover:shadow-gray-400 dark:hover:shadow-gray-900 hover:shadow-xl! transition-all! duration-200! hover:scale-105 relative hover:z-10";
         let card = view! {
             <Card class=card_class>
                 <h3 class="text-lg font-semibold">{release.tag.clone()}</h3>
