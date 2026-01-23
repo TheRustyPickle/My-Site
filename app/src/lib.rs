@@ -5,9 +5,6 @@ mod repo_dl;
 mod secrets;
 mod utils;
 
-#[allow(unused_imports)]
-use leptos::task::spawn_local;
-
 use about::About;
 use leptos::prelude::*;
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
@@ -79,26 +76,20 @@ pub fn App() -> impl IntoView {
         navigate(value_path, Default::default());
     };
 
-    #[allow(unused_variables)]
     let (style_color, set_style) = signal(String::from("f3f4f6ff"));
 
-    // Cannot compile without WASM.
-    // For whatever reason, if spawn_local is not used, state update is not reflected properly.
-    #[cfg(target_arch = "wasm32")]
-    {
-        spawn_local(async move {
-            let window = web_sys::window().unwrap();
-            let media_query = window
-                .match_media("(prefers-color-scheme: dark)")
-                .unwrap()
-                .unwrap();
+    Effect::new(move |_| {
+        let media_query = window()
+            .match_media("(prefers-color-scheme: dark)")
+            .unwrap()
+            .unwrap();
 
-            if media_query.matches() {
-                theme.set(Theme::dark());
-                set_style.set(String::from("111827ff"));
-            }
-        });
-    }
+        if media_query.matches() {
+            theme.set(Theme::dark());
+            set_style.set(String::from("111827ff"));
+        }
+    });
+
     let computed_style = move || format!("background-color: #{};", style_color.get());
 
     view! {
