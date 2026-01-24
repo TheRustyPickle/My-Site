@@ -76,6 +76,7 @@ pub fn Secrets() -> impl IntoView {
     let (decrypted_secret, set_decrypted_secret) = signal(None::<Arc<FullSecretV1>>);
     let (decrypt_error, set_error) = signal(String::new());
 
+    // Initial hash fetching from the URL
     Effect::new(move |_| {
         let current_hash = window().location().hash().unwrap_or_default();
         let final_hash = current_hash
@@ -87,17 +88,23 @@ pub fn Secrets() -> impl IntoView {
         set_hash.set(final_hash);
     });
 
+    // If radio value changes, clear the error
     Effect::new(move |_| {
         let _ = radio_value.get();
         set_error.set(String::new());
     });
 
+    // Utility for handling errors
     let create_error = move |e: String| {
         set_error.set(format!("Failed to decrypt secret. Error: {e:#}"));
         loading.set(false);
         set_decrypt_key.set(String::new());
+        set_hash.set(String::new());
     };
 
+    // After a result is gotten from web worker, it is set to pending. Which is later handled to
+    // create the decrypted secret
+    // Without pending, updating state from spawn causes panic on frontend
     Effect::new(move |_| {
         let pending = pending.get();
 
@@ -106,6 +113,31 @@ pub fn Secrets() -> impl IntoView {
         }
     });
 
+    // Use web worker to decrypt
+    let handle_worker = move |request: WorkerRequest| {
+        spawn_local(async move {
+            let decrypt_result = my_worker(request).await;
+
+            if let Err(e) = decrypt_result {
+                create_error(e.to_string());
+                return;
+            }
+
+            let decrypt_result = decrypt_result.unwrap();
+
+            if let Err(e) = decrypt_result {
+                create_error(e.to_string());
+                return;
+            }
+
+            let secret = decrypt_result.unwrap();
+
+            loading.set(false);
+            set_pending.set(Some(Arc::new(secret)));
+        });
+    };
+
+    // Initiate decryption from manual input key/password
     let initiate_decrypt = move || {
         let payload = payload.get();
         let key = decrypt_key.get();
@@ -133,28 +165,10 @@ pub fn Secrets() -> impl IntoView {
             schema: radio_value.get(),
         };
 
-        spawn_local(async move {
-            let decrypt_result = my_worker(request).await;
-
-            if let Err(e) = decrypt_result {
-                create_error(e.to_string());
-                return;
-            }
-
-            let decrypt_result = decrypt_result.unwrap();
-
-            if let Err(e) = decrypt_result {
-                create_error(e.to_string());
-                return;
-            }
-
-            let secret = decrypt_result.unwrap();
-
-            loading.set(false);
-            set_pending.set(Some(Arc::new(secret)));
-        });
+        handle_worker(request);
     };
 
+    // Initiate decryption from user input or submit button press
     let submit_response = move || {
         let inputted_key = inputted_key.get();
 
@@ -169,14 +183,7 @@ pub fn Secrets() -> impl IntoView {
         initiate_decrypt();
     };
 
-    let suspense_fallback = move || {
-        view! {
-            <div>
-                <Spinner />
-            </div>
-        }
-    };
-
+    // Error message if the secret payload is not found
     let payload_error = move || {
         let (_, error) = failed_payload.get();
         view! {
@@ -186,6 +193,7 @@ pub fn Secrets() -> impl IntoView {
         }
     };
 
+    // UI for getting input from the user, either the password or the key
     let get_key_from_user = move || {
         view! {
             <div class="flex flex-col gap-2">
@@ -231,31 +239,63 @@ pub fn Secrets() -> impl IntoView {
         }
     };
 
-    let show_payload_result = move || view! { <p>"Payload found alongside hash"</p> }.into_any();
+    // If the hash is not empty, initiate decryption
+    let initiate_hash_decryption = move || {
+        // At this point, payload cannot be empty. Hash cannot be empty either
+        let request = WorkerRequest {
+            payload: payload.get().unwrap(),
+            hash: hash.get(),
+            key: String::new(),
+            schema: String::from("Rendom"),
+        };
+
+        handle_worker(request);
+
+        view! { <Spinner /> }.into_any()
+    };
+
+    // To be replaced with actual UI that shows the decrypted content
+    let payload_placeholder = move || {
+        view! { <p>"Decryption done"</p> }
+    };
+
+    // If payload is found, either use the hash to initiate decryption or starting taking user input
+    // If hash decryption fails, move to manual input
+    let handle_decryption = move || {
+        view! {
+            <Show
+                when=move || { hash.get().is_empty() && decrypted_secret.get().is_none() }
+                fallback=move || initiate_hash_decryption
+            >
+                <div>{move || get_key_from_user}</div>
+            </Show>
+        }
+    };
 
     view! {
         <div class="flex justify-center items-center">
-            <Suspense fallback=move || suspense_fallback>
+            <Suspense fallback=move || {
+                view! { <Spinner /> }
+            }>
 
                 <div>
                     <Card class="rounded-lg!">
                         <Show
                             when=move || {
                                 let (status, _) = failed_payload.get();
-                                !status
+                                let payload = payload.get();
+                                !status && payload.is_some()
                             }
                             fallback=move || payload_error
                         >
+
                             <Show
-                                when=move || {
-                                    hash.get().is_empty() && decrypted_secret.get().is_none()
-                                }
-                                fallback=move || show_payload_result
+                                when=move || { decrypted_secret.get().is_some() }
+                                fallback=move || handle_decryption
                             >
-                                <div>
-                                    {move || get_key_from_user}
-                                </div>
+                                <div>{move || payload_placeholder}</div>
                             </Show>
+
                         </Show>
 
                     </Card>
@@ -263,7 +303,6 @@ pub fn Secrets() -> impl IntoView {
                 {move || secret_payload.get().map(handle_payload)}
             </Suspense>
         </div>
-
     }
 }
 
