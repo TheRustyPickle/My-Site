@@ -13,3 +13,15 @@ pub fn create_blob_url(mime: String, content: &Vec<u8>) -> String {
 
     Url::create_object_url_with_blob(&blob).expect("Failed to create blob URL")
 }
+
+pub fn create_blob_url_no_mime(content: &[u8]) -> String {
+    let property = BlobPropertyBag::new();
+
+    let blob = Blob::new_with_u8_slice_sequence_and_options(
+        &Array::of1(&Uint8Array::from(content)),
+        &property,
+    )
+    .expect("Failed to create blob");
+
+    Url::create_object_url_with_blob(&blob).expect("Failed to create blob URL")
+}

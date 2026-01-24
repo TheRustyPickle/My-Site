@@ -8,11 +8,14 @@ use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use thaw::{
-    Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize, Radio,
-    RadioGroup, Spinner,
+    Button, ButtonAppearance, ButtonShape, ButtonSize, Card, Icon, Input, InputPrefix, InputSize,
+    Radio, RadioGroup, Spinner, Textarea,
 };
 use vial_core::crypto::{decrypt_with_password, decrypt_with_random_key};
-use vial_shared::{EncryptedPayload, FullSecretV1, Payload};
+use vial_shared::{EncryptedPayload, FullSecretV1, Payload, SecretFileV1};
+use web_sys::{HtmlAnchorElement, Url, wasm_bindgen::JsCast as _};
+
+use crate::utils::create_blob_url_no_mime;
 
 #[derive(Serialize, Deserialize, Clone)]
 struct WorkerRequest {
@@ -246,7 +249,7 @@ pub fn Secrets() -> impl IntoView {
             payload: payload.get().unwrap(),
             hash: hash.get(),
             key: String::new(),
-            schema: String::from("Rendom"),
+            schema: String::from("Random"),
         };
 
         handle_worker(request);
@@ -256,7 +259,7 @@ pub fn Secrets() -> impl IntoView {
 
     // To be replaced with actual UI that shows the decrypted content
     let payload_placeholder = move || {
-        view! { <p>"Decryption done"</p> }
+        view! { <SecretContent secret=decrypted_secret /> }
     };
 
     // If payload is found, either use the hash to initiate decryption or starting taking user input
@@ -304,6 +307,130 @@ pub fn Secrets() -> impl IntoView {
             </Suspense>
         </div>
     }
+}
+
+#[component]
+fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView {
+    let text_area = RwSignal::new(String::new());
+    let (total_files, set_total_files) = signal(0_usize);
+
+    let copy_text = move || {
+        let clipboard = web_sys::window().unwrap().navigator().clipboard();
+        let _ = clipboard.write_text(&text_area.get());
+    };
+
+    let download_all = move || {
+        let files = &secret.get().unwrap().files;
+        for file in files {
+            let name = file.filename();
+            let content = file.content();
+            download_file(name, content);
+        }
+    };
+
+    Effect::new(move |_| {
+        let secret = secret.get().unwrap();
+        text_area.set(secret.text.clone());
+        set_total_files.set(secret.files.len());
+    });
+
+    view! {
+        <div class="flex flex-col gap-6">
+
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <p class="text-lg font-semibold">"Secret Text"</p>
+
+                    <Button
+                        appearance=ButtonAppearance::Secondary
+                        size=ButtonSize::Medium
+                        on_click=move |_| copy_text()
+                    >
+                        <Icon icon=icondata::FaCopySolid />
+                        <span class="ml-1">"Copy"</span>
+                    </Button>
+                </div>
+
+                <Textarea
+                    value=text_area
+                    allow_value=move |_| { false }
+                    class="font-mono text-sm"
+                />
+            </div>
+
+            <Show when=move || { total_files.get() > 0 }>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-lg font-semibold">
+                            {format!("Files ({})", secret.get().unwrap().files.len())}
+                        </p>
+                        <Button
+                            appearance=ButtonAppearance::Primary
+                            size=ButtonSize::Medium
+                            on_click=move |_| download_all()
+                        >
+                            <Icon icon=icondata::FaDownloadSolid />
+                            <span class="ml-1">"Download all"</span>
+                        </Button>
+                    </div>
+
+                    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <For
+                            each=move || secret.get().unwrap().files.clone()
+                            key=|file| file.filename().to_string()
+                            children=move |file| {
+                                view! { <SecretFileRow file /> }
+                            }
+                        />
+                    </ul>
+                </div>
+            </Show>
+
+        </div>
+    }
+}
+
+#[component]
+fn SecretFileRow(file: SecretFileV1) -> impl IntoView {
+    let name = file.filename().to_string();
+    let size_kb = file.content().len() as f64 / 1024.0;
+    let content = file.content().to_vec();
+
+    view! {
+        <li class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-2">
+                <span class="font-medium">{name.clone()}</span>
+                <span class="text-sm text-gray-500">{format!("({:.1} KB)", size_kb)}</span>
+            </div>
+
+            <Button
+                appearance=ButtonAppearance::Secondary
+                size=ButtonSize::Medium
+                on_click=move |_| {
+                    download_file(&name, content.as_slice());
+                }
+            >
+                <Icon icon=icondata::FaDownloadSolid />
+            </Button>
+        </li>
+    }
+}
+
+fn download_file(name: &str, content: &[u8]) {
+    let url = create_blob_url_no_mime(content);
+
+    let document = web_sys::window().unwrap().document().unwrap();
+    let a = document
+        .create_element("a")
+        .unwrap()
+        .dyn_into::<HtmlAnchorElement>()
+        .unwrap();
+
+    a.set_href(&url);
+    a.set_download(name);
+    a.click();
+
+    Url::revoke_object_url(&url).ok();
 }
 
 fn decrypt_random_key(key: &str, payload: &[u8]) -> AResult<FullSecretV1> {
