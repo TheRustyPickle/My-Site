@@ -199,9 +199,9 @@ pub fn Secrets() -> impl IntoView {
     // UI for getting input from the user, either the password or the key
     let get_key_from_user = move || {
         view! {
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-4 w-full max-w-screen-sm mx-auto p-2 sm:p-4">
                 <Input
-                    class="w-full p-2"
+                    class="w-full p-3 text-sm sm:text-base"
                     placeholder="Secret key or the password used to encrypt this secret"
                     value=inputted_key
                     size=InputSize::Large
@@ -217,10 +217,12 @@ pub fn Secrets() -> impl IntoView {
                 </Input>
 
                 <Show when=move || !decrypt_error.get().is_empty()>
-                    <p class="text-red-500 dark:text-red-400">{move || decrypt_error.get()}</p>
+                    <p class="text-red-500 dark:text-red-400 text-sm sm:text-base">
+                        {move || decrypt_error.get()}
+                    </p>
                 </Show>
 
-                <RadioGroup value=radio_value>
+                <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
                     <Radio value="Password" label="Use password schema" />
                     <Radio value="Random" label="Use random key schema" />
                 </RadioGroup>
@@ -228,12 +230,12 @@ pub fn Secrets() -> impl IntoView {
                 <Button
                     appearance=ButtonAppearance::Primary
                     shape=ButtonShape::Circular
-                    class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
+                    class="mt-2 w-full sm:w-auto text-white! dark:text-gray-100! font-semibold"
                     on_click=move |_| submit_response()
                     loading
                 >
                     <Show when=move || loading.get() fallback=|| view! { "Submit" }>
-                        <div class="flex justify-center item-center gap-2">
+                        <div class="flex justify-center items-center gap-2">
                             <span>"Loading..."</span>
                         </div>
                     </Show>
@@ -257,11 +259,6 @@ pub fn Secrets() -> impl IntoView {
         view! { <Spinner /> }.into_any()
     };
 
-    // To be replaced with actual UI that shows the decrypted content
-    let payload_placeholder = move || {
-        view! { <SecretContent secret=decrypted_secret /> }
-    };
-
     // If payload is found, either use the hash to initiate decryption or starting taking user input
     // If hash decryption fails, move to manual input
     let handle_decryption = move || {
@@ -276,7 +273,7 @@ pub fn Secrets() -> impl IntoView {
     };
 
     view! {
-        <div class="flex justify-center items-center">
+        <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
             <Suspense fallback=move || {
                 view! { <Spinner /> }
             }>
@@ -296,7 +293,9 @@ pub fn Secrets() -> impl IntoView {
                                 when=move || { decrypted_secret.get().is_some() }
                                 fallback=move || handle_decryption
                             >
-                                <div>{move || payload_placeholder}</div>
+                                <div>
+                                    <SecretContent secret=decrypted_secret />
+                                </div>
                             </Show>
 
                         </Show>
@@ -320,30 +319,31 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
     };
 
     let download_all = move || {
-        let files = &secret.get().unwrap().files;
-        for file in files {
-            let name = file.filename();
-            let content = file.content();
-            download_file(name, content);
+        if let Some(secret) = secret.get() {
+            for file in &secret.files {
+                download_file(file.filename(), file.content());
+            }
         }
     };
 
     Effect::new(move |_| {
-        let secret = secret.get().unwrap();
-        text_area.set(secret.text.clone());
-        set_total_files.set(secret.files.len());
+        if let Some(secret) = secret.get() {
+            text_area.set(secret.text.clone());
+            set_total_files.set(secret.files.len());
+        }
     });
 
     view! {
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-6 p-4 sm:p-6 max-w-screen-sm mx-auto">
 
             <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <p class="text-lg font-semibold">"Secret Text"</p>
 
                     <Button
                         appearance=ButtonAppearance::Secondary
                         size=ButtonSize::Medium
+                        class="w-full sm:w-auto"
                         on_click=move |_| copy_text()
                     >
                         <Icon icon=icondata::FaCopySolid />
@@ -354,19 +354,20 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
                 <Textarea
                     value=text_area
                     allow_value=move |_| { false }
-                    class="font-mono text-sm"
+                    class="font-mono text-sm resize-none w-full h-40 sm:h-48"
                 />
             </div>
 
             <Show when=move || { total_files.get() > 0 }>
                 <div class="flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <p class="text-lg font-semibold">
-                            {format!("Files ({})", secret.get().unwrap().files.len())}
+                            {format!("Files ({})", secret.get().map_or(0, |s| s.files.len()))}
                         </p>
                         <Button
                             appearance=ButtonAppearance::Primary
                             size=ButtonSize::Medium
+                            class="w-full sm:w-auto"
                             on_click=move |_| download_all()
                         >
                             <Icon icon=icondata::FaDownloadSolid />
@@ -374,9 +375,9 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
                         </Button>
                     </div>
 
-                    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <ul class="divide-y divide-gray-200 dark:divide-gray-700 overflow-y-auto max-h-64 sm:max-h-80">
                         <For
-                            each=move || secret.get().unwrap().files.clone()
+                            each=move || secret.get().map(|s| s.files.clone()).unwrap_or_default()
                             key=|file| file.filename().to_string()
                             children=move |file| {
                                 view! { <SecretFileRow file /> }
