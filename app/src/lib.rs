@@ -17,6 +17,9 @@ use repo_dl::RepoDL;
 use secrets::Secrets;
 use std::collections::HashMap;
 use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
+use web_sys::MediaQueryListEvent;
+use web_sys::wasm_bindgen::JsCast;
+use web_sys::wasm_bindgen::prelude::Closure;
 
 #[component]
 #[must_use]
@@ -45,10 +48,9 @@ pub fn App() -> impl IntoView {
     ]));
 
     let on_customize_light_theme = move || {
-        theme.set(Theme::custom_light(&brand_colors.get_untracked()));
+        let brand_colors = brand_colors.get_untracked();
+        theme.set(Theme::custom_light(&brand_colors));
     };
-
-    on_customize_light_theme();
 
     let tab_value = RwSignal::new(String::new());
 
@@ -87,7 +89,25 @@ pub fn App() -> impl IntoView {
         if media_query.matches() {
             theme.set(Theme::dark());
             set_style.set(String::from("111827ff"));
+        } else {
+            on_customize_light_theme();
         }
+
+
+        let callback = Closure::wrap(Box::new(move |event: MediaQueryListEvent| {
+            if event.matches() {
+                theme.set(Theme::dark());
+                set_style.set("111827ff".to_string());
+            } else {
+                on_customize_light_theme();
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        media_query
+            .add_listener_with_opt_callback(Some(callback.as_ref().unchecked_ref()))
+            .unwrap();
+
+        callback.forget();
     });
 
     let computed_style = move || format!("background-color: #{};", style_color.get());
