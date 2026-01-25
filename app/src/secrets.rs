@@ -212,7 +212,7 @@ pub fn Secrets() -> impl IntoView {
                     }
                 >
                     <InputPrefix slot>
-                        <Icon icon=icondata::FaRedditBrands />
+                        <Icon icon=icondata::FaKeySolid />
                     </InputPrefix>
                 </Input>
 
