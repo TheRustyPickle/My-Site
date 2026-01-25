@@ -33,10 +33,11 @@ icondata = { version = "0.7.0", default-features = false, features = [
     "font-awesome",
 ] }
 thousands = "0.2.0"
-api = { path = "../api" }
-shared = { path = "../shared" }
 base64 = "0.22.1"
 leptos_workers = "0.3.0"
+
+api = { path = "../api" }
+shared = { path = "../shared" }
 
 vial-core = { git = "https://github.com/TheRustyPickle/Vial" }
 
