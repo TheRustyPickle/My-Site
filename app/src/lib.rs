@@ -23,6 +23,7 @@ use web_sys::wasm_bindgen::prelude::Closure;
 
 #[component]
 #[must_use]
+#[must_use]
 pub fn App() -> impl IntoView {
     provide_meta_context();
 
@@ -92,7 +93,6 @@ pub fn App() -> impl IntoView {
         } else {
             on_customize_light_theme();
         }
-
 
         let callback = Closure::wrap(Box::new(move |event: MediaQueryListEvent| {
             if event.matches() {

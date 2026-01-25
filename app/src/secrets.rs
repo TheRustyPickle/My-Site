@@ -131,7 +131,7 @@ pub fn Secrets() -> impl IntoView {
             let decrypt_result = decrypt_result.unwrap();
 
             if let Err(e) = decrypt_result {
-                create_error(e.to_string());
+                create_error(e.clone());
                 return;
             }
 
@@ -180,7 +180,7 @@ pub fn Secrets() -> impl IntoView {
         if inputted_key.is_empty() {
             set_error.set(String::from("Please enter a key"));
             return;
-        };
+        }
 
         loading.set(true);
         set_decrypt_key.set(inputted_key);
@@ -408,7 +408,7 @@ fn SecretFileRow(file: SecretFile) -> impl IntoView {
         <li class="flex items-center justify-between py-2">
             <div class="flex items-center gap-2">
                 <span class="font-medium">{name.clone()}</span>
-                <span class="text-sm text-gray-500">{format!("({:.1} KB)", size_kb)}</span>
+                <span class="text-sm text-gray-500">{format!("({size_kb:.1} KB)")}</span>
             </div>
 
             <Button

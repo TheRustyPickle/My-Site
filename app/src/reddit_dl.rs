@@ -170,7 +170,7 @@ fn show_downloadables(data: ReadSignal<Option<Downloads>>) -> impl IntoView {
                                     each=move || urls_for_buttons.clone().unwrap()
                                     key=|(item, _)| item.file_name.clone()
                                     children=move |(item, url)| {
-                                        view! { <VideoDownloadButton item url=url.to_string() /> }
+                                        view! { <VideoDownloadButton item url=url.clone() /> }
                                     }
                                 />
                             </div>

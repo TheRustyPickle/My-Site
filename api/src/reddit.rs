@@ -31,7 +31,7 @@ pub async fn get_reddit_url(post_id: &str) -> Result<Downloads> {
         let url = thing.data.url;
 
         if let Some(url) = url.as_ref() {
-            url_found.push(url.to_string());
+            url_found.push(url.clone());
         }
     }
 
@@ -49,7 +49,7 @@ pub async fn get_reddit_url(post_id: &str) -> Result<Downloads> {
             let content = download_image(&url).await?;
 
             let metadata = DownloadMetadata {
-                file_name: post_id.to_string(),
+                file_name: post_id.clone(),
                 extension,
                 sizing: VideoSize::default(),
             };
