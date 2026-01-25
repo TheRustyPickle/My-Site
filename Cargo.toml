@@ -8,16 +8,13 @@ leptos_meta = { version = "0.7.3" }
 leptos_router = { version = "0.7.3" }
 leptos_actix = "0.7.7"
 actix-web = { version = "4", features = ["macros"] }
-console_error_panic_hook = "0.1"
-tokio = { version = "1.43.0", features = ["full"] }
 wasm-bindgen = "=0.2.104"
 log = "0.4.26"
-pretty_env_logger = "0.5.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.140"
-console_log = "1"
 anyhow = "1.0.100"
 
+vial-shared = { git = "https://github.com/TheRustyPickle/Vial" }
 
 [[workspace.metadata.leptos]]
 name = "my_site"
@@ -47,7 +44,7 @@ lib-default-features = false
 
 [profile.release]
 codegen-units = 1
-lto = true
+lto = "fat"
 opt-level = 'z'
 
 [profile.dev]

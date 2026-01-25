@@ -65,6 +65,7 @@ pub fn RepoDL() -> impl IntoView {
                 </h4>
 
                 <Input
+                    disabled=loading
                     class="w-full p-2"
                     placeholder="https://github.com/user/repository"
                     value=link

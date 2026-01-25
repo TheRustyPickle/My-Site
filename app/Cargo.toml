@@ -13,6 +13,7 @@ leptos_actix = { workspace = true, optional = true }
 log.workspace = true
 anyhow = { workspace = true }
 serde.workspace = true
+vial-shared.workspace = true
 
 thaw = { version = "0.4.8", optional = true }
 web-sys = { version = "0.3.77", default-features = false, features = [
@@ -34,10 +35,9 @@ icondata = { version = "0.7.0", default-features = false, features = [
 thousands = "0.2.0"
 api = { path = "../api" }
 shared = { path = "../shared" }
-base64 = { version = "0.22.1" }
+base64 = "0.22.1"
 leptos_workers = "0.3.0"
 
-vial-shared = { git = "https://github.com/TheRustyPickle/Vial" }
 vial-core = { git = "https://github.com/TheRustyPickle/Vial" }
 
 [features]

@@ -228,8 +228,7 @@ pub fn Secrets() -> impl IntoView {
                     </p>
                 </Show>
 
-                <RadioGroup value=radio_value
-                    class="flex flex-col sm:flex-row gap-2" >
+                <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
                     <Radio value="Password" label="Use password schema" />
                     <Radio value="Random" label="Use random key schema" />
                 </RadioGroup>
@@ -349,7 +348,7 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
                     <p class="text-lg font-semibold">"Secret Text"</p>
 
                     <Button
-                        icon = icondata::FaCopySolid
+                        icon=icondata::FaCopySolid
                         appearance=ButtonAppearance::Secondary
                         size=ButtonSize::Medium
                         class="w-full sm:w-auto"
@@ -418,8 +417,7 @@ fn SecretFileRow(file: SecretFile) -> impl IntoView {
                 on_click=move |_| {
                     download_file(&name, file.content.clone().as_ref());
                 }
-            >
-            </Button>
+            ></Button>
         </li>
     }
 }
