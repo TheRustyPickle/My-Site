@@ -1,19 +1,20 @@
 use anyhow::{Context, Result as AResult};
 use api::get_secret;
-use base64::{Engine as _, engine::general_purpose::URL_SAFE};
+use base64::Engine as _;
+use base64::engine::general_purpose::URL_SAFE;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_params_map;
 use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use thaw::{
     Button, ButtonAppearance, ButtonShape, ButtonSize, Card, Icon, Input, InputPrefix, InputSize,
     Radio, RadioGroup, Spinner, Textarea,
 };
 use vial_core::crypto::{decrypt_with_password, decrypt_with_random_key};
-use vial_shared::{EncryptedPayload, FullSecretV1, Payload, SecretFileV1};
-use web_sys::{HtmlAnchorElement, Url, wasm_bindgen::JsCast as _};
+use vial_shared::{EncryptedPayload, FullSecret, FullSecretV1, Payload, SecretFile};
+use web_sys::wasm_bindgen::JsCast as _;
+use web_sys::{HtmlAnchorElement, Url};
 
 use crate::utils::create_blob_url_no_mime;
 
@@ -74,9 +75,9 @@ pub fn Secrets() -> impl IntoView {
     let inputted_key = RwSignal::new(String::new());
     let radio_value = RwSignal::new(String::from("Password"));
 
-    let (pending, set_pending) = signal(None::<Arc<FullSecretV1>>);
+    let (pending, set_pending) = signal(None::<FullSecret>);
 
-    let (decrypted_secret, set_decrypted_secret) = signal(None::<Arc<FullSecretV1>>);
+    let (decrypted_secret, set_decrypted_secret) = signal(None::<FullSecret>);
     let (decrypt_error, set_error) = signal(String::new());
 
     // Initial hash fetching from the URL
@@ -114,6 +115,8 @@ pub fn Secrets() -> impl IntoView {
         if let Some(pending) = pending {
             set_decrypted_secret.set(Some(pending));
         }
+
+        set_pending.set(None);
     });
 
     // Use web worker to decrypt
@@ -136,7 +139,7 @@ pub fn Secrets() -> impl IntoView {
             let secret = decrypt_result.unwrap();
 
             loading.set(false);
-            set_pending.set(Some(Arc::new(secret)));
+            set_pending.set(Some(secret.into_shared()));
         });
     };
 
@@ -188,11 +191,14 @@ pub fn Secrets() -> impl IntoView {
 
     // Error message if the secret payload is not found
     let payload_error = move || {
-        let (_, error) = failed_payload.get();
+        let (status, error) = failed_payload.get();
+
         view! {
-            <p class="text-red-500 dark:text-red-400">
-                {format!("Failed to fetch secret. Error: {error}")}
-            </p>
+            <Show when=move || { status } fallback=move || view! { <Spinner /> }>
+                <p class="text-red-500 dark:text-red-400">
+                    {format!("Failed to fetch secret. Error: {error}")}
+                </p>
+            </Show>
         }
     };
 
@@ -309,9 +315,9 @@ pub fn Secrets() -> impl IntoView {
 }
 
 #[component]
-fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView {
+fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
     let text_area = RwSignal::new(String::new());
-    let (total_files, set_total_files) = signal(0_usize);
+    let (total_files, set_total_files) = signal(0);
 
     let copy_text = move || {
         let clipboard = web_sys::window().unwrap().navigator().clipboard();
@@ -328,8 +334,9 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
 
     Effect::new(move |_| {
         if let Some(secret) = secret.get() {
-            text_area.set(secret.text.clone());
-            set_total_files.set(secret.files.len());
+            let text = secret.text.clone();
+            text_area.set(text.to_string());
+            set_total_files.set(secret.total_files());
         }
     });
 
@@ -362,7 +369,7 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
                 <div class="flex flex-col gap-3">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <p class="text-lg font-semibold">
-                            {format!("Files ({})", secret.get().map_or(0, |s| s.files.len()))}
+                            {format!("Files ({})", total_files.get())}
                         </p>
                         <Button
                             appearance=ButtonAppearance::Primary
@@ -377,7 +384,7 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
 
                     <ul class="divide-y divide-gray-200 dark:divide-gray-700 overflow-y-auto max-h-64 sm:max-h-80">
                         <For
-                            each=move || secret.get().map(|s| s.files.clone()).unwrap_or_default()
+                            each=move || secret.get().map(|s| s.files.clone()).unwrap()
                             key=|file| file.filename().to_string()
                             children=move |file| {
                                 view! { <SecretFileRow file /> }
@@ -392,10 +399,9 @@ fn SecretContent(secret: ReadSignal<Option<Arc<FullSecretV1>>>) -> impl IntoView
 }
 
 #[component]
-fn SecretFileRow(file: SecretFileV1) -> impl IntoView {
+fn SecretFileRow(file: SecretFile) -> impl IntoView {
     let name = file.filename().to_string();
     let size_kb = file.content().len() as f64 / 1024.0;
-    let content = file.content().to_vec();
 
     view! {
         <li class="flex items-center justify-between py-2">
@@ -408,7 +414,7 @@ fn SecretFileRow(file: SecretFileV1) -> impl IntoView {
                 appearance=ButtonAppearance::Secondary
                 size=ButtonSize::Medium
                 on_click=move |_| {
-                    download_file(&name, content.as_slice());
+                    download_file(&name, file.content.clone().as_ref());
                 }
             >
                 <Icon icon=icondata::FaDownloadSolid />

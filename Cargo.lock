@@ -5868,7 +5868,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vial-core"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#2aecd5984e34ccab9d9733194d8de92aa7631f7f"
+source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
 dependencies = [
  "aead",
  "anyhow",
@@ -5882,7 +5882,7 @@ dependencies = [
 [[package]]
 name = "vial-shared"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#2aecd5984e34ccab9d9733194d8de92aa7631f7f"
+source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
 dependencies = [
  "chrono",
  "postcard",
@@ -5893,7 +5893,7 @@ dependencies = [
 [[package]]
 name = "vial-srv"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#2aecd5984e34ccab9d9733194d8de92aa7631f7f"
+source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
 dependencies = [
  "chrono",
  "diesel",
