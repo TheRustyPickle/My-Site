@@ -114,9 +114,8 @@ pub fn Secrets() -> impl IntoView {
 
         if let Some(pending) = pending {
             set_decrypted_secret.set(Some(pending));
+            set_pending.set(None);
         }
-
-        set_pending.set(None);
     });
 
     // Use web worker to decrypt
