@@ -23,7 +23,6 @@ use web_sys::wasm_bindgen::prelude::Closure;
 
 #[component]
 #[must_use]
-#[must_use]
 pub fn App() -> impl IntoView {
     provide_meta_context();
 

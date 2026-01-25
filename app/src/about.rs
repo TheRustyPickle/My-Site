@@ -26,7 +26,7 @@ pub fn About() -> impl IntoView {
             link: "https://discord.com/users/406917444381179905".to_string(),
         },
         Social {
-            icon: icondata::TbBrandTelegram,
+            icon: icondata::RiTelegram2LogosLine,
             name: "Telegram".to_string(),
             link: "https://t.me/RustyPickle".to_string(),
         },
