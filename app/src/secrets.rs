@@ -210,6 +210,7 @@ pub fn Secrets() -> impl IntoView {
                     placeholder="Secret key or the password used to encrypt this secret"
                     value=inputted_key
                     size=InputSize::Large
+                    disabled=loading
                     on:keypress=move |e| {
                         if e.char_code() == 13 {
                             submit_response();
@@ -227,7 +228,8 @@ pub fn Secrets() -> impl IntoView {
                     </p>
                 </Show>
 
-                <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
+                <RadioGroup value=radio_value
+                    class="flex flex-col sm:flex-row gap-2" >
                     <Radio value="Password" label="Use password schema" />
                     <Radio value="Random" label="Use random key schema" />
                 </RadioGroup>
@@ -347,13 +349,13 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
                     <p class="text-lg font-semibold">"Secret Text"</p>
 
                     <Button
+                        icon = icondata::FaCopySolid
                         appearance=ButtonAppearance::Secondary
                         size=ButtonSize::Medium
                         class="w-full sm:w-auto"
                         on_click=move |_| copy_text()
                     >
-                        <Icon icon=icondata::FaCopySolid />
-                        <span class="ml-1">"Copy"</span>
+                        "Copy"
                     </Button>
                 </div>
 
@@ -371,13 +373,13 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
                             {format!("Files ({})", total_files.get())}
                         </p>
                         <Button
+                            icon=icondata::FaDownloadSolid
                             appearance=ButtonAppearance::Primary
                             size=ButtonSize::Medium
                             class="w-full sm:w-auto"
                             on_click=move |_| download_all()
                         >
-                            <Icon icon=icondata::FaDownloadSolid />
-                            <span class="ml-1">"Download all"</span>
+                            "Download all"
                         </Button>
                     </div>
 
@@ -410,13 +412,13 @@ fn SecretFileRow(file: SecretFile) -> impl IntoView {
             </div>
 
             <Button
+                icon=icondata::FaDownloadSolid
                 appearance=ButtonAppearance::Secondary
                 size=ButtonSize::Medium
                 on_click=move |_| {
                     download_file(&name, file.content.clone().as_ref());
                 }
             >
-                <Icon icon=icondata::FaDownloadSolid />
             </Button>
         </li>
     }
