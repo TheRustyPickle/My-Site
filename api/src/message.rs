@@ -12,7 +12,7 @@ pub async fn send_message(text: String) -> Result<()> {
     let bot_token = std::env::var("BOT_TOKEN")?;
     let send_to = std::env::var("SEND_TO")?;
 
-    let url = format!("https://api.telegram.org/bot{}/sendMessage", bot_token);
+    let url = format!("https://api.telegram.org/bot{bot_token}/sendMessage");
 
     let payload = SendMessage {
         chat_id: &send_to,
