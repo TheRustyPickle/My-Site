@@ -1,21 +1,34 @@
 use anyhow::Result;
-use frankenstein::AsyncTelegramApi;
-use frankenstein::client_reqwest::Bot;
-use frankenstein::methods::SendMessageParams;
-use frankenstein::types::ChatId;
+use reqwest::Client;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct SendMessage<'a> {
+    chat_id: &'a str,
+    text: String,
+}
 
 pub async fn send_message(text: String) -> Result<()> {
     let bot_token = std::env::var("BOT_TOKEN")?;
     let send_to = std::env::var("SEND_TO")?;
 
-    let client = Bot::new(&bot_token);
+    let url = format!("https://api.telegram.org/bot{}/sendMessage", bot_token);
 
-    let message = SendMessageParams::builder()
-        .chat_id(ChatId::String(send_to))
-        .text(format!("New message dropped:\n\n{text}"))
-        .build();
+    let payload = SendMessage {
+        chat_id: &send_to,
+        text: format!("New message dropped:\n\n{text}"),
+    };
 
-    client.send_message(&message).await?;
+    let client = Client::new();
+
+    let resp = client
+        .post(url)
+        .json(&payload)
+        .send()
+        .await?
+        .error_for_status()?;
+
+    let _ = resp.text().await?;
 
     Ok(())
 }
