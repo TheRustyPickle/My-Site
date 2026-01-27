@@ -73,8 +73,8 @@ async fn main() -> std::io::Result<()> {
                     && !path.starts_with("/assets/")
                     && !path.starts_with("/favicon.ico")
                     && path != "/sw.js"
-                    && &ip != "54.254.162.138"
-                    && ip != "74.220.52.2"
+                    && !["146.70.199.165", "54.254.162.138", "74.220.52.2"]
+                        .contains(&ip.as_str())
                 {
                     info!("Serving data for path: {path}. Request gotten from: {ip}",);
                 }
