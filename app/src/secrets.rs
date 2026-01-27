@@ -9,7 +9,7 @@ use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
 use thaw::{
     Button, ButtonAppearance, ButtonShape, ButtonSize, Card, Icon, Input, InputPrefix, InputSize,
-    Radio, RadioGroup, Spinner, Textarea,
+    InputSuffix, InputType, Radio, RadioGroup, Spinner, Textarea,
 };
 use vial_core::crypto::{decrypt_with_password, decrypt_with_random_key};
 use vial_shared::{EncryptedPayload, FullSecret, FullSecretV1, Payload, SecretFile};
@@ -201,6 +201,23 @@ pub fn Secrets() -> impl IntoView {
         }
     };
 
+    let input_type = RwSignal::new(InputType::Password);
+    let icon = RwSignal::new(icondata::FaEyeSolid);
+
+    let on_click = move |_| {
+        input_type.update(|current| match current {
+            InputType::Password => {
+                *current = InputType::Text;
+                icon.set(icondata::FaEyeSlashSolid);
+            }
+            InputType::Text => {
+                *current = InputType::Password;
+                icon.set(icondata::FaEyeSolid);
+            }
+            _ => {}
+        });
+    };
+
     // UI for getting input from the user, either the password or the key
     let get_key_from_user = move || {
         view! {
@@ -210,6 +227,7 @@ pub fn Secrets() -> impl IntoView {
                     placeholder="Secret key or the password used to encrypt this secret"
                     value=inputted_key
                     size=InputSize::Large
+                    input_type
                     disabled=loading
                     on:keypress=move |e| {
                         if e.char_code() == 13 {
@@ -220,6 +238,9 @@ pub fn Secrets() -> impl IntoView {
                     <InputPrefix slot>
                         <Icon icon=icondata::FaKeySolid />
                     </InputPrefix>
+                    <InputSuffix slot>
+                        <Button icon on_click appearance=ButtonAppearance::Transparent></Button>
+                    </InputSuffix>
                 </Input>
 
                 <Show when=move || !decrypt_error.get().is_empty()>
@@ -279,6 +300,8 @@ pub fn Secrets() -> impl IntoView {
     };
 
     view! {
+        <leptos_meta::Title text="Secret | Rusty Pickle" />
+
         <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
             <Suspense fallback=move || {
                 view! { <Spinner /> }
