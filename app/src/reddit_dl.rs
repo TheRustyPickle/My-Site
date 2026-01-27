@@ -189,10 +189,9 @@ fn render_image(item: DownloadData) -> impl IntoView {
 
     let url = create_blob_url(mime_type, &item.content);
 
-    let filename = format!(
-        "File: {}.{}",
-        item.metadata.file_name, item.metadata.extension
-    );
+    let filename = format!("{}.{}", item.metadata.file_name, item.metadata.extension);
+
+    let filename_text = format!("File: {filename}");
 
     view! {
         <img
@@ -201,7 +200,7 @@ fn render_image(item: DownloadData) -> impl IntoView {
             alt="Downloadable image"
         />
 
-        <p class="mt-2 text-gray-700 text-sm text-center">{filename.clone()}</p>
+        <p class="mt-2 text-gray-700 text-sm text-center">{filename_text}</p>
 
         <a class="py-2 flex items-center justify-center" href=url download=filename>
             <Button appearance=ButtonAppearance::Primary shape=ButtonShape::Circular class="w-full">

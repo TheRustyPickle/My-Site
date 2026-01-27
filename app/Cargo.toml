@@ -15,8 +15,8 @@ anyhow = { workspace = true }
 serde.workspace = true
 vial-shared.workspace = true
 
-thaw = { version = "0.4.8", optional = true }
-web-sys = { version = "0.3.77", default-features = false, features = [
+thaw = { version = "0.5.0-beta", optional = true }
+web-sys = { version = "0.3.83", default-features = false, features = [
     "Clipboard",
     "Navigator",
     "Window",

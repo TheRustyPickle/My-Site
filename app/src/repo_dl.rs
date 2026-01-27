@@ -98,17 +98,8 @@ pub fn RepoDL() -> impl IntoView {
 
         </div>
 
-        <Show
-            when=move || !error_resp.get().is_empty()
-            fallback=move || {
-                if let Some(summary) = release_summary.get() {
-                    view! { <ReleaseSummary release_summary=summary.clone() /> }.into_any()
-                } else {
-                    view! { "" }.into_any()
-                }
-            }
-        >
-            {}
+        <Show when=move || error_resp.get().is_empty() && release_summary.get().is_some()>
+            <ReleaseSummary release_summary=release_summary.get().unwrap() />
         </Show>
     }
 }
