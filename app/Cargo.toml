@@ -35,11 +35,11 @@ icondata = { version = "0.7.0", default-features = false, features = [
 thousands = "0.2.0"
 base64 = "0.22.1"
 leptos_workers = "0.3.0"
+vial-core = "0.1.0"
 
 api = { path = "../api" }
 shared = { path = "../shared" }
 
-vial-core = { git = "https://github.com/TheRustyPickle/Vial" }
 
 [features]
 default = []

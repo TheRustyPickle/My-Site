@@ -14,12 +14,11 @@ leptos_actix.workspace = true
 actix-web.workspace = true
 log.workspace = true
 leptos_router.workspace = true
+vial-shared.workspace = true
 
 tokio = { version = "1.49.0", features = ["rt-multi-thread", "macros"] }
 pretty_env_logger = "0.5.0"
 actix-files = "0.6.9"
 dotenvy = "0.15.7"
 reqwest = "0.13.1"
-
-vial-srv = { git = "https://github.com/TheRustyPickle/Vial" }
-vial-shared = { git = "https://github.com/TheRustyPickle/Vial" }
+vial-srv = "0.1.0"

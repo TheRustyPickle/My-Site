@@ -1234,6 +1234,7 @@ checksum = "13096fb8dae53f2d411c4b523bec85f45552ed3044a2ab4d85fb2092d9cb4f34"
 dependencies = [
  "bb8",
  "diesel",
+ "diesel_migrations",
  "futures-core",
  "futures-util",
  "scoped-futures",
@@ -6095,7 +6096,8 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vial-core"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fcc9f98a5d33006a709579ad94ab1c86f327e446979939063a6c94157801177"
 dependencies = [
  "aead",
  "anyhow",
@@ -6109,7 +6111,8 @@ dependencies = [
 [[package]]
 name = "vial-shared"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "603556107260a4cb1d201314d9e09c4bfdc1b8a17745cf6b346f9ff40086e1be"
 dependencies = [
  "chrono",
  "postcard",
@@ -6120,7 +6123,8 @@ dependencies = [
 [[package]]
 name = "vial-srv"
 version = "0.1.0"
-source = "git+https://github.com/TheRustyPickle/Vial#44c54fd88e8359711ca7d0f5dfb1c6c50fb1e23a"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "763cb94bee6c0a66b3b18b4eafbfe50b8470cd5594c2254c795994e517b13a96"
 dependencies = [
  "chrono",
  "diesel",
