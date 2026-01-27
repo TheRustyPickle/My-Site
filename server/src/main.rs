@@ -18,7 +18,7 @@ use vial_srv::errors::ServerError;
 
 const MAX_SIZE: usize = 1024 * 1024 * 5 + 200;
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
 
@@ -41,6 +41,9 @@ async fn main() -> std::io::Result<()> {
 
     let db_url = var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_handler = get_connection(&db_url).await;
+
+    // INFO: Add it add a later point perhaps
+    // db_handler.clear_expired_days(30);
 
     tokio::spawn(ping_site());
 
