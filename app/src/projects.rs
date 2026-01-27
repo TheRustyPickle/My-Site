@@ -17,6 +17,7 @@ enum ContentProject {
     Table,
     Theme,
     Pulse,
+    Vial,
 }
 
 #[derive(Clone)]
@@ -716,11 +717,38 @@ fn get_project_list() -> Vec<Project> {
         content: crane_content,
     };
 
+    let vial_content = ProjectContent {
+        content: ContentProject::Vial,
+        demo_link: Some(String::from(
+            "https://rustypickle.onrender.com/secrets/01KFZPC330S6S45221BF7XV8JR",
+        )),
+        images: Some(vec![
+            String::from("/assets/vial_1.png"),
+            String::from("/assets/vial_2.png"),
+        ]),
+        source_link: String::from("https://github.com/TheRustyPickle/Vial"),
+    };
+    let vial = Project {
+        title_image: Some(String::from("/assets/vial_1.png")),
+        name: String::from("Vial"),
+        description: String::from("End-to-end encrypted secret sharing"),
+        badges: vec![
+            "Rust".to_string(),
+            "Actix-Web".to_string(),
+            "PostgreSQL".to_string(),
+            "Encryption".to_string(),
+            "XChaCha20".to_string(),
+            "CLI".to_string(),
+        ],
+        content: vial_content,
+    };
+
     vec![
         rex,
         talon,
         funnel,
         chirp,
+        vial,
         crane,
         repo_dl,
         reddit_dl,
@@ -1004,5 +1032,28 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
                 <li>"View real-time installation logs"</li>
             </ul>
         }.into_any(),
+        ContentProject::Vial => view! {
+            <p class="text-lg font-medium">
+                "Vial is a small Rust project for end-to-end encrypted secret sharing. Secrets are encrypted on the client, sent to a server as ciphertext, and decrypted only by the recipient. The server never knows the decryption key or the contents of a secret."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"What It Does"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>"Create encrypted secrets (text or files) using a password or a random key"</li>
+                <li>"Upload encrypted payloads to a server"</li>
+                <li>"Fetch and decrypt secrets locally"</li>
+                <li>"Enforce expiration and view limits on the server"</li>
+                <li>"Self-hostable server or reusable server library"</li>
+            </ul>
+
+            <div class="flex flex-col">
+                <p class="mt-4 text-md">"Use the password:"</p>
+                <p class="mt-4 text-md font-semibold">"password"</p>
+                <p class="mt-4 text-md">"in the demo link to view the secret!"</p>
+
+            </div>
+        }.into_any(),
+
     }
 }
