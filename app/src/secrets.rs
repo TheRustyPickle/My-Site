@@ -4,6 +4,7 @@ use base64::Engine as _;
 use base64::engine::general_purpose::URL_SAFE;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_meta::Title;
 use leptos_router::hooks::use_params_map;
 use leptos_router::{LazyRoute, lazy_route};
 use leptos_workers::worker;
@@ -68,17 +69,7 @@ impl LazyRoute for SecretView {
 
     fn view(this: Self) -> AnyView {
         let (payload, set_payload) = signal(None::<EncryptedPayload>);
-        let (failed_payload, set_failed_payload) = signal((false, String::new()));
         let loading = RwSignal::new(false);
-
-        let handle_payload = move |payload: Result<EncryptedPayload, ServerFnError>| match payload {
-            Ok(payload) => {
-                set_payload.set(Some(payload));
-            }
-            Err(e) => {
-                set_failed_payload.set((true, e.to_string()));
-            }
-        };
 
         let (hash, set_hash) = signal(String::new());
         let (decrypt_key, set_decrypt_key) = signal(String::new());
@@ -199,19 +190,6 @@ impl LazyRoute for SecretView {
             initiate_decrypt();
         };
 
-        // Error message if the secret payload is not found
-        let payload_error = move || {
-            let (status, error) = failed_payload.get();
-
-            view! {
-                <Show when=move || { status } fallback=move || view! { <Spinner /> }>
-                    <p class="text-red-500 dark:text-red-400">
-                        {format!("Failed to fetch secret. Error: {error}")}
-                    </p>
-                </Show>
-            }
-        };
-
         let input_type = RwSignal::new(InputType::Password);
         let icon = RwSignal::new(icondata::FaEyeSolid);
 
@@ -311,40 +289,48 @@ impl LazyRoute for SecretView {
         };
 
         view! {
-            <leptos_meta::Title text="Secret | Rusty Pickle" />
+            <Title text="Secret | Rusty Pickle" />
 
-            <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
                 <Suspense fallback=move || {
-                    view! { <Spinner /> }
+                    view! {
+                        <Spinner />
+                    }
                 }>
-
-                    <div>
-                        <Card class="rounded-lg!">
-                            <Show
-                                when=move || {
-                                    let (status, _) = failed_payload.get();
-                                    let payload = payload.get();
-                                    !status && payload.is_some()
+                    {move || {
+                        this.resource
+                            .get()
+                            .map(|result| {
+                                match result {
+                                    Ok(data) => {
+                                        set_payload.set(Some(data));
+                                        view! {
+                                            <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
+                                            <Card class="rounded-lg!">
+                                                <Show
+                                                    when=move || { decrypted_secret.get().is_some() }
+                                                    fallback=move || handle_decryption
+                                                >
+                                                    <SecretContent secret=decrypted_secret />
+                                                </Show>
+                                            </Card>
+                                            </div>
+                                        }
+                                            .into_any()
+                                    }
+                                    Err(e) => {
+                                        view! {
+                                            <div>
+                                                <p class="text-red-500 dark:text-red-400">
+                                                    {format!("Failed to fetch secret. Error: {e}")}
+                                                </p>
+                                            </div>
+                                        }
+                                            .into_any()
+                                    }
                                 }
-                                fallback=move || payload_error
-                            >
-
-                                <Show
-                                    when=move || { decrypted_secret.get().is_some() }
-                                    fallback=move || handle_decryption
-                                >
-                                    <div>
-                                        <SecretContent secret=decrypted_secret />
-                                    </div>
-                                </Show>
-
-                            </Show>
-
-                        </Card>
-                    </div>
-                    {move || this.resource.get().map(handle_payload)}
+                            })
+                    }}
                 </Suspense>
-            </div>
         }
         .into_any()
     }
@@ -377,7 +363,7 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
     });
 
     view! {
-        <div class="flex flex-col gap-6 p-4 sm:p-6 max-w-screen-sm mx-auto">
+        <div class="flex flex-col gap-6 p-4 sm:p-6 w-full">
 
             <div class="flex flex-col gap-2">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -422,9 +408,7 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
                         <For
                             each=move || secret.get().map(|s| s.files.clone()).unwrap()
                             key=|file| file.filename().to_string()
-                            children=move |file| {
-                                view! { <SecretFileRow file /> }.into_any()
-                            }
+                            children=move |file| { view! { <SecretFileRow file /> }.into_any() }
                         />
                     </ul>
                 </div>
