@@ -16,6 +16,7 @@ pub mod message;
 pub mod secret;
 
 #[server]
+#[lazy]
 pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnError> {
     use crate::reddit::get_reddit_url;
     use log::error;
@@ -30,6 +31,7 @@ pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnErr
 }
 
 #[server]
+#[lazy]
 pub async fn github_checker(
     username: String,
     repo_link: String,
@@ -47,6 +49,7 @@ pub async fn github_checker(
 }
 
 #[server]
+#[lazy]
 pub async fn message_drop(text: String) -> Result<(), ServerFnError> {
     use crate::message::send_message;
     use log::error;

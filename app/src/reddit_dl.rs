@@ -2,11 +2,115 @@ use api::reddit_downloader;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::Title;
+use leptos_router::{LazyRoute, lazy_route};
 use shared::extract_reddit_id;
 use shared::models::{DlType, DownloadData, DownloadMetadata, Downloads};
 use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize};
 
 use crate::utils::create_blob_url;
+
+pub struct RedditDLView {}
+
+#[lazy_route]
+impl LazyRoute for RedditDLView {
+    fn data() -> Self {
+        Self {}
+    }
+
+    fn view(_this: Self) -> AnyView {
+        let link = RwSignal::new(String::new());
+        let (loading, set_loading) = signal(false);
+        let (downloadables, set_downloadables) = signal(None);
+        let (error_resp, set_error) = signal(String::new());
+
+        let fetch_downloads = move |post_id| {
+            set_downloadables.set(None);
+            set_error.set(String::new());
+            set_loading.set(true);
+            spawn_local(async move {
+                let result = reddit_downloader(post_id).await;
+
+                match result {
+                    Ok(downloadables) => set_downloadables.set(Some(downloadables)),
+                    Err(e) => set_error.set(e.to_string()),
+                }
+                set_loading.set(false);
+            });
+        };
+
+        let valid_reddit_link = move || {
+            if let Some(post_id) = extract_reddit_id(&link.get()) {
+                fetch_downloads(post_id.to_string());
+            } else {
+                set_error.set(String::from("No valid reddit link was found."));
+            }
+        };
+
+        let download_button_text = move || {
+            if loading.get() {
+                view! {
+                    <div class="flex justify-center item-center gap-2">
+                        <span>"Loading..."</span>
+                    </div>
+                }
+                .into_any()
+            } else {
+                view! { "Get Contents" }.into_any()
+            }
+        };
+
+        view! {
+            <Title text="Reddit D/L | Rusty Pickle" />
+
+            <div class="flex items-center justify-center px-2">
+                <Card class="gap-0! w-11/12 sm:w-4/5 m-10 md:w-3/5 lg:w-1/2 xl:w-2/5 mb-20 rounded-lg!">
+                    <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
+                        "Reddit Post Downloader"
+                    </h4>
+                    <Input
+                        class="w-full p-2"
+                        placeholder="https://reddit.com/r/subreddit/comments/1234/post-details/"
+                        value=link
+                        size=InputSize::Large
+                        on:keypress=move |e| {
+                            if e.char_code() == 13 {
+                                valid_reddit_link();
+                            }
+                        }
+                    >
+
+                        <InputPrefix slot>
+                            <Icon icon=icondata::FaRedditBrands />
+                        </InputPrefix>
+                    </Input>
+
+                    <Button
+                        appearance=ButtonAppearance::Primary
+                        shape=ButtonShape::Circular
+                        class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
+                        on_click=move |_| valid_reddit_link()
+                        loading
+                    >
+                        {move || download_button_text()}
+                    </Button>
+
+                    <Show
+                        when=move || !error_resp.get().is_empty()
+                        fallback=move || {
+                            if downloadables.get().is_some() {
+                                view! { <ShowDownloadables data=downloadables /> }.into_any()
+                            } else {
+                                view! { "" }.into_any()
+                            }
+                        }
+                    >
+                        <p class="text-red-500 dark:text-red-400 mt-2">{error_resp.get()}</p>
+                    </Show>
+                </Card>
+            </div>
+        }.into_any()
+    }
+}
 
 #[component]
 pub fn RedditDL() -> impl IntoView {

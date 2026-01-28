@@ -5,21 +5,21 @@ mod repo_dl;
 mod secrets;
 mod utils;
 
-use about::About;
 use leptos::prelude::*;
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
 use leptos_router::{Lazy, StaticSegment, WildcardSegment, path};
-use projects::Projects;
-use reddit_dl::RedditDL;
-use repo_dl::RepoDL;
 use std::collections::HashMap;
 use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
 use web_sys::MediaQueryListEvent;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::prelude::Closure;
 
+use crate::about::AboutView;
+use crate::projects::ProjectsView;
+use crate::reddit_dl::RedditDLView;
+use crate::repo_dl::RepoDLView;
 use crate::secrets::SecretView;
 
 #[component]
@@ -137,11 +137,11 @@ pub fn App() -> impl IntoView {
                         <div class="bg-gray-100 dark:bg-gray-900">
                             <Routes fallback=move || NotFound>
                                 <Route path=StaticSegment("") view=ToProjectPage />
-                                <Route path=StaticSegment("/projects") view=Projects />
-                                <Route path=StaticSegment("/reddit") view=RedditDL />
-                                <Route path=StaticSegment("/repo") view=RepoDL />
-                                <Route path=StaticSegment("/about") view=About />
-                                <Route path=path!("/secrets/:id") view={ Lazy::<SecretView>::new() } />
+                                <Route path=StaticSegment("/projects") view={Lazy::<ProjectsView>::new()} />
+                                <Route path=StaticSegment("/reddit") view={Lazy::<RedditDLView>::new()} />
+                                <Route path=StaticSegment("/repo") view={Lazy::<RepoDLView>::new()} />
+                                <Route path=StaticSegment("/about") view={Lazy::<AboutView>::new()} />
+                                <Route path=path!("/secrets/:id") view={Lazy::<SecretView>::new()} />
                                 <Route path=WildcardSegment("any") view=NotFound />
                             </Routes>
                         </div>

@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 use leptos_meta::Title;
+use leptos_router::{LazyRoute, lazy_route};
 use thaw::{
     Badge, BadgeAppearance, Button, ButtonAppearance, ButtonShape, Card, Dialog, DialogContent,
     DialogSurface, DialogTitle, Scrollbar,
@@ -35,6 +36,91 @@ struct ProjectContent {
     content: ContentProject,
     source_link: String,
     demo_link: Option<String>,
+}
+
+pub struct ProjectsView {}
+
+#[lazy_route]
+impl LazyRoute for ProjectsView {
+    fn data() -> Self {
+        Self {}
+    }
+
+    fn view(_this: Self) -> AnyView {
+        let dialog_open = RwSignal::new(false);
+
+        let (open_project, set_open_project) = signal(None);
+
+        let project_list = get_project_list();
+
+        let open_dialog = move |project| {
+            dialog_open.set(true);
+            set_open_project.set(Some(project));
+        };
+
+        view! {
+            <Title text="Projects | Rusty Pickle" />
+            <div class="w-full max-w-5xl mx-auto p-4">
+                <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
+                    "My Projects"
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                    <For
+                        each=move || project_list.clone()
+                        key=|project| project.name.clone()
+                        children=move |project| {
+                            let project_clone = project.clone();
+                            view! {
+                                <Card
+                                    class="rounded-lg! shadow-lg! h-90 bg-white dark:bg-gray-800 overflow-hidden flex flex-col cursor-pointer transition-all hover:scale-105 hover:shadow-lg active:scale-95"
+                                    on:click=move |_| { open_dialog(project_clone.clone()) }
+                                >
+                                    <img
+                                        src=project.title_image.clone()
+                                        class="w-full h-40 object-cover transition-all hover:brightness-75"
+                                    />
+
+                                    <div class="p-4 flex flex-col grow">
+                                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                            {project.name.clone()}
+                                        </h3>
+                                        <p class="text-gray-700 dark:text-gray-300 text-sm mt-2 grow">
+                                            {project.description.clone()}
+                                        </p>
+
+                                        <div class="flex flex-wrap gap-2 mt-3">
+                                            <For
+                                                each=move || project.badges.clone()
+                                                key=|badge| badge.clone()
+                                                children=move |badge| {
+                                                    view! {
+                                                        <Badge appearance=BadgeAppearance::Outline>{badge}</Badge>
+                                                    }
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                </Card>
+                            }
+                        }
+                    />
+                </div>
+            </div>
+
+            <Dialog open=dialog_open>
+                <DialogSurface>
+                    <Show when=move || {
+                        open_project.get().is_some()
+                    }>
+                        {move || {
+                            view! { <ShowDialog project=open_project.get().unwrap() dialog_open /> }
+                        }}
+                    </Show>
+                </DialogSurface>
+            </Dialog>
+        }.into_any()
+    }
 }
 
 #[component]

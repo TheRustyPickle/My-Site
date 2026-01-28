@@ -46,7 +46,7 @@ COPY . .
 ENV LEPTOS_TAILWIND_VERSION="4.1.18"
 
 # Build the app with cargo-leptos
-RUN cargo leptos build --release -vv
+RUN cargo leptos build --split --release -vv
 
 FROM rust:1.90-bookworm AS runtime
 WORKDIR /app

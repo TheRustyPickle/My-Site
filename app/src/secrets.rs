@@ -423,7 +423,7 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
                             each=move || secret.get().map(|s| s.files.clone()).unwrap()
                             key=|file| file.filename().to_string()
                             children=move |file| {
-                                view! { <SecretFileRow file /> }
+                                view! { <SecretFileRow file /> }.into_any()
                             }
                         />
                     </ul>

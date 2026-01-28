@@ -2,6 +2,7 @@ use api::github_checker;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::Title;
+use leptos_router::{LazyRoute, lazy_route};
 use shared::{
     extract_github_info,
     models::{ReleaseInfo, RepoReleasesSummary},
@@ -9,100 +10,111 @@ use shared::{
 use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize};
 use thousands::Separable;
 
-#[component]
-pub fn RepoDL() -> impl IntoView {
-    let link = RwSignal::new(String::new());
-    let (loading, set_loading) = signal(false);
-    let (error_resp, set_error) = signal(String::new());
-    let (release_summary, set_release_summary) = signal(None);
+pub struct RepoDLView {}
 
-    let content_button_text = move || {
-        if loading.get() {
-            view! {
-                <div class="flex justify-center item-center gap-2">
-                    <span>"Processing..."</span>
-                </div>
-            }
-            .into_any()
-        } else {
-            view! { "Check Releases" }.into_any()
-        }
-    };
+#[lazy_route]
+impl LazyRoute for RepoDLView {
+    fn data() -> Self {
+        Self {}
+    }
 
-    let get_release_status = move |username, repo| {
-        set_error.set(String::new());
-        set_loading.set(true);
-        set_release_summary.set(None);
+    fn view(_this: Self) -> AnyView {
+        let link = RwSignal::new(String::new());
+        let (loading, set_loading) = signal(false);
+        let (error_resp, set_error) = signal(String::new());
+        let (release_summary, set_release_summary) = signal(None);
 
-        spawn_local(async move {
-            let result = github_checker(username, repo).await;
-
-            match result {
-                Ok(release) => {
-                    set_release_summary.set(Some(release));
+        let content_button_text = move || {
+            if loading.get() {
+                view! {
+                    <div class="flex justify-center item-center gap-2">
+                        <span>"Processing..."</span>
+                    </div>
                 }
-                Err(e) => set_error.set(e.to_string()),
+                .into_any()
+            } else {
+                view! { "Check Releases" }.into_any()
             }
-            set_loading.set(false);
-        });
-    };
+        };
 
-    let valid_github_link = move || {
-        if let Some((username, repo)) = extract_github_info(&link.get()) {
-            get_release_status(username, repo);
-        } else {
-            set_error.set(String::from("No valid github link was found."));
-        }
-    };
+        let get_release_status = move |username, repo| {
+            set_error.set(String::new());
+            set_loading.set(true);
+            set_release_summary.set(None);
 
-    view! {
-        <Title text="GitHub D/L | Rusty Pickle" />
+            spawn_local(async move {
+                let result = github_checker(username, repo).await;
 
-        <div class="flex items-center justify-center mb-2 px-2">
-            <Card class="gap-0! w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5 rounded-lg!">
-                <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
-                    "Github Release Status"
-                </h4>
-
-                <Input
-                    disabled=loading
-                    class="w-full p-2"
-                    placeholder="https://github.com/user/repository"
-                    value=link
-                    size=InputSize::Large
-                    on:keypress=move |e| {
-                        if e.char_code() == 13 {
-                            valid_github_link();
-                        }
+                match result {
+                    Ok(release) => {
+                        set_release_summary.set(Some(release));
                     }
-                >
-                    <InputPrefix slot>
-                        <Icon icon=icondata::FaGithubBrands />
-                    </InputPrefix>
-                </Input>
+                    Err(e) => set_error.set(e.to_string()),
+                }
+                set_loading.set(false);
+            });
+        };
 
-                <Button
-                    appearance=ButtonAppearance::Primary
-                    shape=ButtonShape::Circular
-                    class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
-                    on_click=move |_| valid_github_link()
-                    loading
-                >
-                    {move || content_button_text()}
-                </Button>
+        let valid_github_link = move || {
+            if let Some((username, repo)) = extract_github_info(&link.get()) {
+                get_release_status(username, repo);
+            } else {
+                set_error.set(String::from("No valid github link was found."));
+            }
+        };
 
-                <Show when=move || !error_resp.get().is_empty()>
-                    <p class="text-red-500 dark:text-red-400 mt-2">{error_resp.get()}</p>
-                </Show>
-            </Card>
+        view! {
+            <Title text="GitHub D/L | Rusty Pickle" />
 
-        </div>
+            <div class="flex items-center justify-center mb-2 px-2">
+                <Card class="gap-0! w-11/12 sm:w-4/5 md:w-3/5 lg:w-1/2 xl:w-2/5 rounded-lg!">
+                    <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2 flex item-center justify-center">
+                        "Github Release Status"
+                    </h4>
 
-        <Show when=move || error_resp.get().is_empty() && release_summary.get().is_some()>
-            <ReleaseSummary release_summary=release_summary.get().unwrap() />
-        </Show>
+                    <Input
+                        disabled=loading
+                        class="w-full p-2"
+                        placeholder="https://github.com/user/repository"
+                        value=link
+                        size=InputSize::Large
+                        on:keypress=move |e| {
+                            if e.char_code() == 13 {
+                                valid_github_link();
+                            }
+                        }
+                    >
+                        <InputPrefix slot>
+                            <Icon icon=icondata::FaGithubBrands />
+                        </InputPrefix>
+                    </Input>
+
+                    <Button
+                        appearance=ButtonAppearance::Primary
+                        shape=ButtonShape::Circular
+                        class="mt-2 w-full text-white! dark:text-gray-100! font-semibold"
+                        on_click=move |_| valid_github_link()
+                        loading
+                    >
+                        {move || content_button_text()}
+                    </Button>
+
+                    <Show when=move || !error_resp.get().is_empty()>
+                        <p class="text-red-500 dark:text-red-400 mt-2">{error_resp.get()}</p>
+                    </Show>
+                </Card>
+
+            </div>
+
+            <Show when=move || error_resp.get().is_empty() && release_summary.get().is_some()>
+                <ReleaseSummary release_summary=release_summary.get().unwrap() />
+            </Show>
+        }.into_any()
     }
 }
+
+#[component]
+pub fn RepoDL() -> impl IntoView {}
 
 #[component]
 fn ReleaseSummary(release_summary: RepoReleasesSummary) -> impl IntoView {
