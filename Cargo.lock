@@ -327,7 +327,6 @@ dependencies = [
  "roux",
  "serde",
  "serde_json",
- "server_fn",
  "shared",
  "vial-shared",
 ]
