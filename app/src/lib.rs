@@ -10,16 +10,17 @@ use leptos::prelude::*;
 use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router::hooks::{use_location, use_navigate};
-use leptos_router::{StaticSegment, WildcardSegment, path};
+use leptos_router::{Lazy, StaticSegment, WildcardSegment, path};
 use projects::Projects;
 use reddit_dl::RedditDL;
 use repo_dl::RepoDL;
-use secrets::Secrets;
 use std::collections::HashMap;
 use thaw::{ConfigProvider, Layout, LayoutPosition, Tab, TabList, Theme};
 use web_sys::MediaQueryListEvent;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::prelude::Closure;
+
+use crate::secrets::SecretView;
 
 #[component]
 #[must_use]
@@ -140,7 +141,7 @@ pub fn App() -> impl IntoView {
                                 <Route path=StaticSegment("/reddit") view=RedditDL />
                                 <Route path=StaticSegment("/repo") view=RepoDL />
                                 <Route path=StaticSegment("/about") view=About />
-                                <Route path=path!("/secrets/:id") view=Secrets />
+                                <Route path=path!("/secrets/:id") view={ Lazy::<SecretView>::new() } />
                                 <Route path=WildcardSegment("any") view=NotFound />
                             </Routes>
                         </div>

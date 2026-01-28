@@ -1,4 +1,4 @@
-use leptos::prelude::ServerFnError;
+use leptos::prelude::*;
 use leptos::server;
 use shared::models::{Downloads, RepoReleasesSummary};
 use vial_shared::EncryptedPayload;
@@ -61,6 +61,7 @@ pub async fn message_drop(text: String) -> Result<(), ServerFnError> {
 }
 
 #[server]
+#[lazy]
 pub async fn get_secret(id: String) -> Result<EncryptedPayload, ServerFnError> {
     use crate::secret::get_secret;
     use log::error;

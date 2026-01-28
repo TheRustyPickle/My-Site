@@ -5,6 +5,7 @@ use base64::engine::general_purpose::URL_SAFE;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::hooks::use_params_map;
+use leptos_router::{LazyRoute, lazy_route};
 use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
 use thaw::{
@@ -48,292 +49,304 @@ fn my_worker(request: WorkerRequest) -> Result<FullSecretV1, String> {
     result.map_err(|e| format!("{e:#}"))
 }
 
-#[component]
-pub fn Secrets() -> impl IntoView {
-    let params = use_params_map();
+pub struct SecretView {
+    resource: Resource<Result<EncryptedPayload, ServerFnError>>,
+}
 
-    let id = move || params.read().get("id").unwrap_or_default();
+#[lazy_route]
+impl LazyRoute for SecretView {
+    fn data() -> Self {
+        let params = use_params_map();
 
-    let (payload, set_payload) = signal(None::<EncryptedPayload>);
-    let (failed_payload, set_failed_payload) = signal((false, String::new()));
-    let loading = RwSignal::new(false);
+        let id = move || params.read().get("id").unwrap_or_default();
+        let secret_payload = Resource::new(id, move |id| async move { get_secret(id).await });
 
-    let secret_payload = Resource::new(id, move |id| async move { get_secret(id).await });
-
-    let handle_payload = move |payload: Result<EncryptedPayload, ServerFnError>| match payload {
-        Ok(payload) => {
-            set_payload.set(Some(payload));
+        Self {
+            resource: secret_payload,
         }
-        Err(e) => {
-            set_failed_payload.set((true, e.to_string()));
-        }
-    };
+    }
 
-    let (hash, set_hash) = signal(String::new());
-    let (decrypt_key, set_decrypt_key) = signal(String::new());
+    fn view(this: Self) -> AnyView {
+        let (payload, set_payload) = signal(None::<EncryptedPayload>);
+        let (failed_payload, set_failed_payload) = signal((false, String::new()));
+        let loading = RwSignal::new(false);
 
-    let inputted_key = RwSignal::new(String::new());
-    let radio_value = RwSignal::new(String::from("Password"));
-
-    let (pending, set_pending) = signal(None::<FullSecret>);
-
-    let (decrypted_secret, set_decrypted_secret) = signal(None::<FullSecret>);
-    let (decrypt_error, set_error) = signal(String::new());
-
-    // Initial hash fetching from the URL
-    Effect::new(move |_| {
-        let current_hash = window().location().hash().unwrap_or_default();
-        let final_hash = current_hash
-            .strip_prefix('#')
-            .unwrap_or(&current_hash)
-            .to_string();
-
-        set_decrypt_key.set(final_hash.clone());
-        set_hash.set(final_hash);
-    });
-
-    // If radio value changes, clear the error
-    Effect::new(move |_| {
-        let _ = radio_value.get();
-        set_error.set(String::new());
-    });
-
-    // Utility for handling errors
-    let create_error = move |e: String| {
-        set_error.set(format!("Failed to decrypt secret. Error: {e:#}"));
-        loading.set(false);
-        set_decrypt_key.set(String::new());
-        set_hash.set(String::new());
-    };
-
-    // After a result is gotten from web worker, it is set to pending. Which is later handled to
-    // create the decrypted secret
-    // Without pending, updating state from spawn causes panic on frontend
-    Effect::new(move |_| {
-        let pending = pending.get();
-
-        if let Some(pending) = pending {
-            set_decrypted_secret.set(Some(pending));
-            set_pending.set(None);
-        }
-    });
-
-    // Use web worker to decrypt
-    let handle_worker = move |request: WorkerRequest| {
-        spawn_local(async move {
-            let decrypt_result = my_worker(request).await;
-
-            if let Err(e) = decrypt_result {
-                create_error(e.to_string());
-                return;
+        let handle_payload = move |payload: Result<EncryptedPayload, ServerFnError>| match payload {
+            Ok(payload) => {
+                set_payload.set(Some(payload));
             }
-
-            let decrypt_result = decrypt_result.unwrap();
-
-            if let Err(e) = decrypt_result {
-                create_error(e.clone());
-                return;
+            Err(e) => {
+                set_failed_payload.set((true, e.to_string()));
             }
+        };
 
-            let secret = decrypt_result.unwrap();
+        let (hash, set_hash) = signal(String::new());
+        let (decrypt_key, set_decrypt_key) = signal(String::new());
 
+        let inputted_key = RwSignal::new(String::new());
+        let radio_value = RwSignal::new(String::from("Password"));
+
+        let (pending, set_pending) = signal(None::<FullSecret>);
+
+        let (decrypted_secret, set_decrypted_secret) = signal(None::<FullSecret>);
+        let (decrypt_error, set_error) = signal(String::new());
+
+        // Initial hash fetching from the URL
+        Effect::new(move |_| {
+            let current_hash = window().location().hash().unwrap_or_default();
+            let final_hash = current_hash
+                .strip_prefix('#')
+                .unwrap_or(&current_hash)
+                .to_string();
+
+            set_decrypt_key.set(final_hash.clone());
+            set_hash.set(final_hash);
+        });
+
+        // If radio value changes, clear the error
+        Effect::new(move |_| {
+            let _ = radio_value.get();
+            set_error.set(String::new());
+        });
+
+        // Utility for handling errors
+        let create_error = move |e: String| {
+            set_error.set(format!("Failed to decrypt secret. Error: {e:#}"));
             loading.set(false);
-            set_pending.set(Some(secret.into_shared()));
-        });
-    };
-
-    // Initiate decryption from manual input key/password
-    let initiate_decrypt = move || {
-        let payload = payload.get();
-        let key = decrypt_key.get();
-        let hash = hash.get();
-
-        if decrypted_secret.get().is_some() {
-            create_error(String::from("Secret has already been decrypted"));
-            return;
-        }
-
-        let Some(payload) = payload else {
-            create_error(String::from("Payload not found"));
-            return;
+            set_decrypt_key.set(String::new());
+            set_hash.set(String::new());
         };
 
-        if key.is_empty() {
-            create_error(String::from("Decrypt key cannot be empty"));
-            return;
-        }
+        // After a result is gotten from web worker, it is set to pending. Which is later handled to
+        // create the decrypted secret
+        // Without pending, updating state from spawn causes panic on frontend
+        Effect::new(move |_| {
+            let pending = pending.get();
 
-        let request = WorkerRequest {
-            payload,
-            hash,
-            key: decrypt_key.get(),
-            schema: radio_value.get(),
+            if let Some(pending) = pending {
+                set_decrypted_secret.set(Some(pending));
+                set_pending.set(None);
+            }
+        });
+
+        // Use web worker to decrypt
+        let handle_worker = move |request: WorkerRequest| {
+            spawn_local(async move {
+                let decrypt_result = my_worker(request).await;
+
+                if let Err(e) = decrypt_result {
+                    create_error(e.to_string());
+                    return;
+                }
+
+                let decrypt_result = decrypt_result.unwrap();
+
+                if let Err(e) = decrypt_result {
+                    create_error(e.clone());
+                    return;
+                }
+
+                let secret = decrypt_result.unwrap();
+
+                loading.set(false);
+                set_pending.set(Some(secret.into_shared()));
+            });
         };
 
-        handle_worker(request);
-    };
+        // Initiate decryption from manual input key/password
+        let initiate_decrypt = move || {
+            let payload = payload.get();
+            let key = decrypt_key.get();
+            let hash = hash.get();
 
-    // Initiate decryption from user input or submit button press
-    let submit_response = move || {
-        let inputted_key = inputted_key.get();
-
-        if inputted_key.is_empty() {
-            set_error.set(String::from("Please enter a key"));
-            return;
-        }
-
-        loading.set(true);
-        set_decrypt_key.set(inputted_key);
-        set_error.set(String::new());
-        initiate_decrypt();
-    };
-
-    // Error message if the secret payload is not found
-    let payload_error = move || {
-        let (status, error) = failed_payload.get();
-
-        view! {
-            <Show when=move || { status } fallback=move || view! { <Spinner /> }>
-                <p class="text-red-500 dark:text-red-400">
-                    {format!("Failed to fetch secret. Error: {error}")}
-                </p>
-            </Show>
-        }
-    };
-
-    let input_type = RwSignal::new(InputType::Password);
-    let icon = RwSignal::new(icondata::FaEyeSolid);
-
-    let on_click = move |_| {
-        input_type.update(|current| match current {
-            InputType::Password => {
-                *current = InputType::Text;
-                icon.set(icondata::FaEyeSlashSolid);
+            if decrypted_secret.get().is_some() {
+                create_error(String::from("Secret has already been decrypted"));
+                return;
             }
-            InputType::Text => {
-                *current = InputType::Password;
-                icon.set(icondata::FaEyeSolid);
+
+            let Some(payload) = payload else {
+                create_error(String::from("Payload not found"));
+                return;
+            };
+
+            if key.is_empty() {
+                create_error(String::from("Decrypt key cannot be empty"));
+                return;
             }
-            _ => {}
-        });
-    };
 
-    // UI for getting input from the user, either the password or the key
-    let get_key_from_user = move || {
-        view! {
-            <div class="flex flex-col gap-4 w-full max-w-screen-sm mx-auto p-2 sm:p-4">
-                <Input
-                    class="w-full p-3 text-sm sm:text-base"
-                    placeholder="Secret key or the password used to encrypt this secret"
-                    value=inputted_key
-                    size=InputSize::Large
-                    input_type
-                    disabled=loading
-                    on:keypress=move |e| {
-                        if e.char_code() == 13 {
-                            submit_response();
-                        }
-                    }
-                >
-                    <InputPrefix slot>
-                        <Icon icon=icondata::FaKeySolid />
-                    </InputPrefix>
-                    <InputSuffix slot>
-                        <Button icon on_click appearance=ButtonAppearance::Transparent></Button>
-                    </InputSuffix>
-                </Input>
+            let request = WorkerRequest {
+                payload,
+                hash,
+                key: decrypt_key.get(),
+                schema: radio_value.get(),
+            };
 
-                <Show when=move || !decrypt_error.get().is_empty()>
-                    <p class="text-red-500 dark:text-red-400 text-sm sm:text-base">
-                        {move || decrypt_error.get()}
+            handle_worker(request);
+        };
+
+        // Initiate decryption from user input or submit button press
+        let submit_response = move || {
+            let inputted_key = inputted_key.get();
+
+            if inputted_key.is_empty() {
+                set_error.set(String::from("Please enter a key"));
+                return;
+            }
+
+            loading.set(true);
+            set_decrypt_key.set(inputted_key);
+            set_error.set(String::new());
+            initiate_decrypt();
+        };
+
+        // Error message if the secret payload is not found
+        let payload_error = move || {
+            let (status, error) = failed_payload.get();
+
+            view! {
+                <Show when=move || { status } fallback=move || view! { <Spinner /> }>
+                    <p class="text-red-500 dark:text-red-400">
+                        {format!("Failed to fetch secret. Error: {error}")}
                     </p>
                 </Show>
-
-                <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
-                    <Radio value="Password" label="Use password schema" />
-                    <Radio value="Random" label="Use random key schema" />
-                </RadioGroup>
-
-                <Button
-                    appearance=ButtonAppearance::Primary
-                    shape=ButtonShape::Circular
-                    class="mt-2 w-full sm:w-auto text-white! dark:text-gray-100! font-semibold"
-                    on_click=move |_| submit_response()
-                    loading
-                >
-                    <Show when=move || loading.get() fallback=|| view! { "Submit" }>
-                        <div class="flex justify-center items-center gap-2">
-                            <span>"Loading..."</span>
-                        </div>
-                    </Show>
-                </Button>
-            </div>
-        }
-    };
-
-    // If the hash is not empty, initiate decryption
-    let initiate_hash_decryption = move || {
-        // At this point, payload cannot be empty. Hash cannot be empty either
-        let request = WorkerRequest {
-            payload: payload.get().unwrap(),
-            hash: hash.get(),
-            key: String::new(),
-            schema: String::from("Random"),
+            }
         };
 
-        handle_worker(request);
+        let input_type = RwSignal::new(InputType::Password);
+        let icon = RwSignal::new(icondata::FaEyeSolid);
 
-        view! { <Spinner /> }.into_any()
-    };
+        let on_click = move |_| {
+            input_type.update(|current| match current {
+                InputType::Password => {
+                    *current = InputType::Text;
+                    icon.set(icondata::FaEyeSlashSolid);
+                }
+                InputType::Text => {
+                    *current = InputType::Password;
+                    icon.set(icondata::FaEyeSolid);
+                }
+                _ => {}
+            });
+        };
 
-    // If payload is found, either use the hash to initiate decryption or starting taking user input
-    // If hash decryption fails, move to manual input
-    let handle_decryption = move || {
-        view! {
-            <Show
-                when=move || { hash.get().is_empty() && decrypted_secret.get().is_none() }
-                fallback=move || initiate_hash_decryption
-            >
-                <div>{move || get_key_from_user}</div>
-            </Show>
-        }
-    };
-
-    view! {
-        <leptos_meta::Title text="Secret | Rusty Pickle" />
-
-        <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
-            <Suspense fallback=move || {
-                view! { <Spinner /> }
-            }>
-
-                <div>
-                    <Card class="rounded-lg!">
-                        <Show
-                            when=move || {
-                                let (status, _) = failed_payload.get();
-                                let payload = payload.get();
-                                !status && payload.is_some()
+        // UI for getting input from the user, either the password or the key
+        let get_key_from_user = move || {
+            view! {
+                <div class="flex flex-col gap-4 w-full max-w-screen-sm mx-auto p-2 sm:p-4">
+                    <Input
+                        class="w-full p-3 text-sm sm:text-base"
+                        placeholder="Secret key or the password used to encrypt this secret"
+                        value=inputted_key
+                        size=InputSize::Large
+                        input_type
+                        disabled=loading
+                        on:keypress=move |e| {
+                            if e.char_code() == 13 {
+                                submit_response();
                             }
-                            fallback=move || payload_error
-                        >
+                        }
+                    >
+                        <InputPrefix slot>
+                            <Icon icon=icondata::FaKeySolid />
+                        </InputPrefix>
+                        <InputSuffix slot>
+                            <Button icon on_click appearance=ButtonAppearance::Transparent></Button>
+                        </InputSuffix>
+                    </Input>
 
+                    <Show when=move || !decrypt_error.get().is_empty()>
+                        <p class="text-red-500 dark:text-red-400 text-sm sm:text-base">
+                            {move || decrypt_error.get()}
+                        </p>
+                    </Show>
+
+                    <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
+                        <Radio value="Password" label="Use password schema" />
+                        <Radio value="Random" label="Use random key schema" />
+                    </RadioGroup>
+
+                    <Button
+                        appearance=ButtonAppearance::Primary
+                        shape=ButtonShape::Circular
+                        class="mt-2 w-full sm:w-auto text-white! dark:text-gray-100! font-semibold"
+                        on_click=move |_| submit_response()
+                        loading
+                    >
+                        <Show when=move || loading.get() fallback=|| view! { "Submit" }>
+                            <div class="flex justify-center items-center gap-2">
+                                <span>"Loading..."</span>
+                            </div>
+                        </Show>
+                    </Button>
+                </div>
+            }
+        };
+
+        // If the hash is not empty, initiate decryption
+        let initiate_hash_decryption = move || {
+            // At this point, payload cannot be empty. Hash cannot be empty either
+            let request = WorkerRequest {
+                payload: payload.get().unwrap(),
+                hash: hash.get(),
+                key: String::new(),
+                schema: String::from("Random"),
+            };
+
+            handle_worker(request);
+
+            view! { <Spinner /> }.into_any()
+        };
+
+        // If payload is found, either use the hash to initiate decryption or starting taking user input
+        // If hash decryption fails, move to manual input
+        let handle_decryption = move || {
+            view! {
+                <Show
+                    when=move || { hash.get().is_empty() && decrypted_secret.get().is_none() }
+                    fallback=move || initiate_hash_decryption
+                >
+                    <div>{move || get_key_from_user}</div>
+                </Show>
+            }
+        };
+
+        view! {
+            <leptos_meta::Title text="Secret | Rusty Pickle" />
+
+            <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
+                <Suspense fallback=move || {
+                    view! { <Spinner /> }
+                }>
+
+                    <div>
+                        <Card class="rounded-lg!">
                             <Show
-                                when=move || { decrypted_secret.get().is_some() }
-                                fallback=move || handle_decryption
+                                when=move || {
+                                    let (status, _) = failed_payload.get();
+                                    let payload = payload.get();
+                                    !status && payload.is_some()
+                                }
+                                fallback=move || payload_error
                             >
-                                <div>
-                                    <SecretContent secret=decrypted_secret />
-                                </div>
+
+                                <Show
+                                    when=move || { decrypted_secret.get().is_some() }
+                                    fallback=move || handle_decryption
+                                >
+                                    <div>
+                                        <SecretContent secret=decrypted_secret />
+                                    </div>
+                                </Show>
+
                             </Show>
 
-                        </Show>
-
-                    </Card>
-                </div>
-                {move || secret_payload.get().map(handle_payload)}
-            </Suspense>
-        </div>
+                        </Card>
+                    </div>
+                    {move || this.resource.get().map(handle_payload)}
+                </Suspense>
+            </div>
+        }
+        .into_any()
     }
 }
 
