@@ -13,10 +13,12 @@ FROM chef AS builder
 
 # Install required tools
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends protobuf-compiler ffmpeg curl wget \
+  && apt-get install -y --no-install-recommends protobuf-compiler ffmpeg curl wget binaryen \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
+
+RUN cargo install cargo-leptos
 
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
@@ -25,8 +27,6 @@ RUN cargo chef cook --release --recipe-path recipe.json
 
 RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.18/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
-
-RUN cargo install cargo-leptos
 
 # Add WASM target
 RUN rustup target add wasm32-unknown-unknown
@@ -40,9 +40,9 @@ COPY . .
 ENV LEPTOS_TAILWIND_VERSION="4.1.18"
 
 # Build the app with cargo-leptos
-RUN cargo leptos build --split --release -vv
+RUN cargo leptos build --split --release
 
-FROM rust:1.93-bookworm AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg \
