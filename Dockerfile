@@ -1,4 +1,4 @@
-FROM rust:1.90-bookworm as chef
+FROM rust:1.93-bookworm as chef
 # Use cargo-chef to cache dependencies
 RUN cargo install cargo-chef
 
@@ -26,13 +26,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 RUN curl -Lo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.18/tailwindcss-linux-x64 \
     && chmod +x /usr/local/bin/tailwindcss
 
-RUN curl -L -o cargo-leptos.tar.gz https://github.com/leptos-rs/cargo-leptos/releases/download/v0.2.46/cargo-leptos-x86_64-unknown-linux-gnu.tar.gz \
-    && tar -xzf cargo-leptos.tar.gz \
-    && cd cargo-leptos-x86_64-unknown-linux-gnu \
-    && mv cargo-leptos /usr/local/bin/ \
-    && chmod +x /usr/local/bin/cargo-leptos \
-    && cd ~ \
-    && rm -rf cargo-leptos.tar.gz cargo-leptos-x86_64-unknown-linux-gnu
+RUN cargo install cargo-leptos
 
 # Add WASM target
 RUN rustup target add wasm32-unknown-unknown
@@ -48,7 +42,7 @@ ENV LEPTOS_TAILWIND_VERSION="4.1.18"
 # Build the app with cargo-leptos
 RUN cargo leptos build --split --release -vv
 
-FROM rust:1.90-bookworm AS runtime
+FROM rust:1.93-bookworm AS runtime
 WORKDIR /app
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg \
