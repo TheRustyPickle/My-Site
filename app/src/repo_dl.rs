@@ -3,10 +3,8 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::Title;
 use leptos_router::{LazyRoute, lazy_route};
-use shared::{
-    extract_github_info,
-    models::{ReleaseInfo, RepoReleasesSummary},
-};
+use shared::extract_github_info;
+use shared::models::{ReleaseInfo, RepoReleasesSummary};
 use thaw::{Button, ButtonAppearance, ButtonShape, Card, Icon, Input, InputPrefix, InputSize};
 use thousands::Separable;
 

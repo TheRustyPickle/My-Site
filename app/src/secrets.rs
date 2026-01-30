@@ -291,20 +291,18 @@ impl LazyRoute for SecretView {
         view! {
             <Title text="Secret | Rusty Pickle" />
 
-                <Suspense fallback=move || {
-                    view! {
-                        <Spinner />
-                    }
-                }>
-                    {move || {
-                        this.resource
-                            .get()
-                            .map(|result| {
-                                match result {
-                                    Ok(data) => {
-                                        set_payload.set(Some(data));
-                                        view! {
-                                            <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
+            <Suspense fallback=move || {
+                view! { <Spinner /> }
+            }>
+                {move || {
+                    this.resource
+                        .get()
+                        .map(|result| {
+                            match result {
+                                Ok(data) => {
+                                    set_payload.set(Some(data));
+                                    view! {
+                                        <div class="rounded-lg! w-full max-w-screen-sm mx-auto p-4 sm:p-6 flex flex-col gap-6">
                                             <Card class="rounded-lg!">
                                                 <Show
                                                     when=move || { decrypted_secret.get().is_some() }
@@ -313,24 +311,24 @@ impl LazyRoute for SecretView {
                                                     <SecretContent secret=decrypted_secret />
                                                 </Show>
                                             </Card>
-                                            </div>
-                                        }
-                                            .into_any()
+                                        </div>
                                     }
-                                    Err(e) => {
-                                        view! {
-                                            <div>
-                                                <p class="text-red-500 dark:text-red-400">
-                                                    {format!("Failed to fetch secret. Error: {e}")}
-                                                </p>
-                                            </div>
-                                        }
-                                            .into_any()
-                                    }
+                                        .into_any()
                                 }
-                            })
-                    }}
-                </Suspense>
+                                Err(e) => {
+                                    view! {
+                                        <div>
+                                            <p class="text-red-500 dark:text-red-400">
+                                                {format!("Failed to fetch secret. Error: {e}")}
+                                            </p>
+                                        </div>
+                                    }
+                                        .into_any()
+                                }
+                            }
+                        })
+                }}
+            </Suspense>
         }
         .into_any()
     }
