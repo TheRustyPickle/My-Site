@@ -3,6 +3,7 @@ mod projects;
 mod reddit_dl;
 mod repo_dl;
 mod secrets;
+mod secrets_id;
 mod utils;
 
 use leptos::prelude::*;
@@ -21,6 +22,7 @@ use crate::projects::ProjectsView;
 use crate::reddit_dl::RedditDLView;
 use crate::repo_dl::RepoDLView;
 use crate::secrets::SecretView;
+use crate::secrets_id::SecretIDView;
 
 #[component]
 #[must_use]
@@ -141,6 +143,7 @@ pub fn App() -> impl IntoView {
                                 <Route path=StaticSegment("/reddit") view={Lazy::<RedditDLView>::new()} />
                                 <Route path=StaticSegment("/repo") view={Lazy::<RepoDLView>::new()} />
                                 <Route path=StaticSegment("/about") view={Lazy::<AboutView>::new()} />
+                                <Route path=StaticSegment("/secrets") view={Lazy::<SecretIDView>::new()} />
                                 <Route path=path!("/secrets/:id") view={Lazy::<SecretView>::new()} />
                                 <Route path=WildcardSegment("any") view=NotFound />
                             </Routes>
