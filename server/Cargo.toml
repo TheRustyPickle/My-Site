@@ -8,17 +8,18 @@ edition = "2024"
 [dependencies]
 app = { path = "../app", default-features = false, features = ["ssr"] }
 
-leptos = { workspace = true, features = ["ssr"] }
-leptos_meta.workspace = true
-leptos_actix.workspace = true
 actix-web.workspace = true
-log.workspace = true
+leptos = { workspace = true, features = ["ssr"] }
+leptos_actix.workspace = true
+leptos_meta.workspace = true
 leptos_router.workspace = true
-vial-shared.workspace = true
+log.workspace = true
+vial-shared = { workspace = true, features = ["config"] }
 
-tokio = { version = "1.49.0", features = ["rt-multi-thread", "macros"] }
-pretty_env_logger = "0.5.0"
 actix-files = "0.6.9"
+chrono = "0.4.44"
 dotenvy = "0.15.7"
+pretty_env_logger = "0.5.0"
 reqwest = "0.13.1"
-vial-srv = "0.1.0"
+tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+vial-srv = "0.2.0"

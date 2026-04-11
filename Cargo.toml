@@ -14,7 +14,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 anyhow = "1.0.100"
 
-vial-shared = "0.1.0"
+vial-shared = "0.2.0"
 
 [[workspace.metadata.leptos]]
 name = "my_site"

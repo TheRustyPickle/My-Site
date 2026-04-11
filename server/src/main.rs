@@ -2,6 +2,7 @@ use actix_files::Files;
 use actix_web::web::{Data, Json, Path};
 use actix_web::{App, HttpResponse, HttpServer, dev, web};
 use app::App;
+use chrono::{Days, Utc};
 use dev::Service;
 use leptos::config::get_configuration;
 use leptos::prelude::*;
@@ -9,14 +10,12 @@ use leptos_actix::{LeptosRoutes, generate_route_list};
 use leptos_meta::MetaTags;
 use log::{LevelFilter, error, info};
 use reqwest::Client;
-use std::env::var;
 use std::time::Duration;
 use tokio::time::sleep;
 use vial_shared::CreateSecretRequest;
+use vial_shared::config::Config;
 use vial_srv::db::{Handler, get_connection};
 use vial_srv::errors::ServerError;
-
-const MAX_SIZE: usize = 1024 * 1024 * 5 + 200;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -29,17 +28,16 @@ async fn main() -> std::io::Result<()> {
 
     let conf = get_configuration(None).unwrap();
 
-    let port = var("PORT")
-        .ok()
-        .and_then(|p| p.parse::<u16>().ok())
-        .unwrap_or(8080);
+    let config = Config::default();
 
-    let address = var("ADDRESS").unwrap_or("0.0.0.0".to_string());
+    let port = config.get_port();
+
+    let address = config.get_address();
 
     let addr = format!("{address}:{port}");
     let addr_clone = addr.clone();
 
-    let db_url = var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let db_url = config.get_database_url_verified();
     let db_handler = get_connection(&db_url).await;
 
     // INFO: Add it add a later point perhaps
@@ -85,6 +83,8 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             .app_data(Data::new(db_handler.clone()))
+            .app_data(Data::new(config.clone()))
+            .app_data(web::JsonConfig::default().limit(config.get_max_size_verified()))
             .service(
                 web::scope("/api/secrets")
                     .route("/{id}", web::get().to(get_secret))
@@ -176,19 +176,49 @@ async fn get_secret(id: Path<String>, db_handler: Data<Handler>) -> HttpResponse
 
 async fn create_secret(
     db_handler: Data<Handler>,
+    config: Data<Config>,
     payload: Json<CreateSecretRequest>,
 ) -> HttpResponse {
     let payload = payload.into_inner();
 
-    let max_size = var("MAX_SIZE")
-        .ok()
-        .and_then(|p| p.parse::<usize>().ok())
-        .unwrap_or(MAX_SIZE);
+    if payload.expires_at.is_none() && payload.max_views.is_none() {
+        return server_error_to_response(ServerError::ViewAndExpireEmpty);
+    }
 
-    if payload.ciphertext.len() > max_size {
+    let max_size = config.get_max_size_verified();
+    let max_day = config.get_max_days_verified();
+    let max_view = config.get_max_views_verified();
+
+    if payload.ciphertext.len() > max_size || payload.ciphertext.is_empty() {
+        info!(
+            "Payload too large. Max size is {max_size} bytes. Gotten {}",
+            payload.ciphertext.len()
+        );
+
         return HttpResponse::PayloadTooLarge()
             .body("Payload too large. Max size is {MAX_SIZE} bytes");
     }
+
+    if let Some(payload_day) = payload.expires_at {
+        let max_naivetime = Utc::now().naive_utc() + Days::new(max_day as u64);
+
+        if payload_day > max_naivetime || payload_day < Utc::now().naive_utc() {
+            info!(
+                "Payload day too large. Max day is {max_day}. Gotten {}",
+                payload_day
+            );
+
+            return server_error_to_response(ServerError::InvalidExpire);
+        }
+    }
+
+    if let Some(payload_view) = payload.max_views
+        && payload_view > max_view as i32
+        && payload_view < 1
+    {
+        return server_error_to_response(ServerError::InvalidViewCount);
+    }
+
     db_handler
         .new_secret(payload)
         .await

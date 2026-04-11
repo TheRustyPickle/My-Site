@@ -751,6 +751,9 @@ fn get_project_list() -> Vec<Project> {
         images: Some(vec![
             String::from("/assets/vial_1.png"),
             String::from("/assets/vial_2.png"),
+            String::from("/assets/vial_3.png"),
+            String::from("/assets/vial_4.png"),
+            String::from("/assets/vial_5.png"),
         ]),
         source_link: String::from("https://github.com/TheRustyPickle/Vial"),
     };
@@ -762,9 +765,10 @@ fn get_project_list() -> Vec<Project> {
             "Rust".to_string(),
             "Actix-Web".to_string(),
             "PostgreSQL".to_string(),
-            "Encryption".to_string(),
             "XChaCha20".to_string(),
             "CLI".to_string(),
+            "GUI".to_string(),
+            "GPUI".to_string(),
         ],
         content: vial_content,
     };
