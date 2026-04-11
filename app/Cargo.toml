@@ -6,50 +6,49 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = { workspace = true }
 leptos.workspace = true
+leptos_actix = { workspace = true, optional = true }
 leptos_meta.workspace = true
 leptos_router.workspace = true
-leptos_actix = { workspace = true, optional = true }
 log.workspace = true
-anyhow = { workspace = true }
 serde.workspace = true
 vial-shared.workspace = true
 
-thaw = { version = "0.5.0-beta", optional = true }
-web-sys = { version = "0.3.83", default-features = false, features = [
-    "Clipboard",
-    "Navigator",
-    "Window",
-    "MediaQueryList",
-    "Blob",
-    "Url",
-    "BlobPropertyBag",
-    "MediaQueryListEvent",
-] }
 actix-web = { workspace = true, optional = true }
-icondata = { version = "0.7.0", default-features = false, features = [
-    "remix-icon",
-    "material-design-icons",
-    "font-awesome",
-] }
-thousands = "0.2.0"
 base64 = "0.22.1"
+icondata = { version = "0.7.0", default-features = false, features = [
+  "font-awesome",
+  "material-design-icons",
+  "remix-icon",
+] }
 leptos_workers = "0.3.0"
+thaw = { git = "https://github.com/thaw-ui/thaw", rev = "35254c7fd4cb33bc8a27a8c7b11dc4a71cbdcbac", optional = true }
+thousands = "0.2.0"
 vial-core = "0.2.0"
+web-sys = { version = "0.3.83", default-features = false, features = [
+  "Blob",
+  "BlobPropertyBag",
+  "Clipboard",
+  "MediaQueryList",
+  "MediaQueryListEvent",
+  "Navigator",
+  "Url",
+  "Window",
+] }
 
 api = { path = "../api" }
 shared = { path = "../shared" }
-
 
 [features]
 default = []
 hydrate = ["leptos/hydrate", "thaw/hydrate"]
 ssr = [
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
-    "dep:leptos_actix",
-    "thaw/ssr",
-    "dep:actix-web",
-    "api/ssr",
+  "api/ssr",
+  "dep:actix-web",
+  "dep:leptos_actix",
+  "leptos_meta/ssr",
+  "leptos_router/ssr",
+  "leptos/ssr",
+  "thaw/ssr",
 ]

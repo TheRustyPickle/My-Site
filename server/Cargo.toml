@@ -16,10 +16,10 @@ leptos_router.workspace = true
 log.workspace = true
 vial-shared = { workspace = true, features = ["config"] }
 
-actix-files = "0.6.9"
+actix-files = "0.6.10"
 chrono = "0.4.44"
 dotenvy = "0.15.7"
 pretty_env_logger = "0.5.0"
-reqwest = "0.13.1"
-tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+reqwest = "0.13.2"
+tokio = { version = "1.51.1", features = ["macros", "rt-multi-thread"] }
 vial-srv = "0.2.0"

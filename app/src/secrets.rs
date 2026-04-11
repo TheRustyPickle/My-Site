@@ -1,3 +1,4 @@
+
 use anyhow::{Context, Result as AResult};
 use api::get_secret;
 use base64::Engine as _;
@@ -19,6 +20,7 @@ use web_sys::wasm_bindgen::JsCast as _;
 use web_sys::{HtmlAnchorElement, Url};
 
 use crate::utils::create_blob_url_no_mime;
+
 
 #[derive(Serialize, Deserialize, Clone)]
 struct WorkerRequest {
@@ -258,6 +260,7 @@ impl LazyRoute for SecretView {
                     </Button>
                 </div>
             }
+            .into_any()
         };
 
         // If the hash is not empty, initiate decryption
@@ -286,6 +289,7 @@ impl LazyRoute for SecretView {
                     <div>{move || get_key_from_user}</div>
                 </Show>
             }
+            .into_any()
         };
 
         view! {
@@ -335,7 +339,7 @@ impl LazyRoute for SecretView {
 }
 
 #[component]
-fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
+fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> AnyView {
     let text_area = RwSignal::new(String::new());
     let (total_files, set_total_files) = signal(0);
 
@@ -413,11 +417,11 @@ fn SecretContent(secret: ReadSignal<Option<FullSecret>>) -> impl IntoView {
             </Show>
 
         </div>
-    }
+    }.into_any()
 }
 
 #[component]
-fn SecretFileRow(file: SecretFile) -> impl IntoView {
+fn SecretFileRow(file: SecretFile) -> AnyView {
     let name = file.filename().to_string();
     let size_kb = file.content().len() as f64 / 1024.0;
 
@@ -438,6 +442,7 @@ fn SecretFileRow(file: SecretFile) -> impl IntoView {
             ></Button>
         </li>
     }
+    .into_any()
 }
 
 fn download_file(name: &str, content: &[u8]) {

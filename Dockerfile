@@ -1,4 +1,4 @@
-FROM rust:1.93-bookworm as chef
+FROM rust:1.94-bookworm AS chef
 # Use cargo-chef to cache dependencies
 RUN cargo install cargo-chef
 
@@ -17,9 +17,8 @@ RUN apt-get update -y \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
-
-RUN cargo install cargo-leptos
-
+RUN rustup target add wasm32-unknown-unknown
+RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/leptos-rs/cargo-leptos/releases/download/v0.3.6/cargo-leptos-installer.sh | sh
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
