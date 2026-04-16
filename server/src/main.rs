@@ -63,6 +63,13 @@ async fn main() -> std::io::Result<()> {
                     .unwrap_or("Unknown")
                     .to_string();
 
+                let ignore_ip_list = [
+                    "146.70.199.165",
+                    "54.254.162.138",
+                    "74.220.52.2",
+                    "74.220.52.251",
+                ];
+
                 if !path.starts_with("/pkg/")
                     && !path.ends_with(".js")
                     && !path.ends_with(".js")
@@ -71,7 +78,7 @@ async fn main() -> std::io::Result<()> {
                     && !path.starts_with("/assets/")
                     && !path.starts_with("/favicon.ico")
                     && path != "/sw.js"
-                    && !["146.70.199.165", "54.254.162.138", "74.220.52.2"].contains(&ip.as_str())
+                    && !ignore_ip_list.contains(&ip.as_str())
                 {
                     info!("Serving data for path: {path}. Request gotten from: {ip}",);
                 }
@@ -182,6 +189,7 @@ async fn create_secret(
     let payload = payload.into_inner();
 
     if payload.expires_at.is_none() && payload.max_views.is_none() {
+        info!("Secret expire and view count are empty");
         return server_error_to_response(ServerError::ViewAndExpireEmpty);
     }
 
@@ -196,7 +204,7 @@ async fn create_secret(
         );
 
         return HttpResponse::PayloadTooLarge()
-            .body("Payload too large. Max size is {MAX_SIZE} bytes");
+            .body("Payload size is invalid. Max size is {MAX_SIZE} bytes");
     }
 
     if let Some(payload_day) = payload.expires_at {
@@ -204,7 +212,7 @@ async fn create_secret(
 
         if payload_day > max_naivetime || payload_day < Utc::now().naive_utc() {
             info!(
-                "Payload day too large. Max day is {max_day}. Gotten {}",
+                "Payload day is invalid. Max day is {max_day}. Gotten {}",
                 payload_day
             );
 
@@ -213,9 +221,9 @@ async fn create_secret(
     }
 
     if let Some(payload_view) = payload.max_views
-        && payload_view > max_view as i32
-        && payload_view < 1
+        && (payload_view > max_view as i32 || payload_view < 1)
     {
+        info!("Payload view is invalid. Max view is {max_view}. Gotten {payload_view}");
         return server_error_to_response(ServerError::InvalidViewCount);
     }
 
