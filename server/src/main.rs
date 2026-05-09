@@ -44,6 +44,7 @@ async fn main() -> std::io::Result<()> {
     // db_handler.clear_expired_days(30);
 
     tokio::spawn(ping_site());
+    tokio::spawn(ping_api());
 
     HttpServer::new(move || {
         // Generate the list of routes in your Leptos App
@@ -68,6 +69,9 @@ async fn main() -> std::io::Result<()> {
                     "54.254.162.138",
                     "74.220.52.2",
                     "74.220.52.251",
+                    "170.106.165.76",
+                    "43.166.244.251",
+                    "185.100.232.165",
                 ];
 
                 if !path.starts_with("/pkg/")
@@ -162,6 +166,25 @@ async fn ping_site() {
     loop {
         let _ = client.get(url).send().await;
         sleep(Duration::from_secs(100)).await;
+    }
+}
+
+async fn ping_api() {
+    let client = Client::new();
+    let url = "https://svp-dashboard.vercel.app/api/svp/cleanup";
+
+    let auth_token = match std::env::var("CLEANUP_SECRET") {
+        Ok(token) => token,
+        Err(_) => {
+            error!("CLEANUP_SECRET env var is not set");
+            return;
+        }
+    };
+
+    info!("API Pinger initialized");
+    loop {
+        let _ = client.post(url).bearer_auth(&auth_token).send().await;
+        sleep(Duration::from_secs(60 * 5)).await;
     }
 }
 
