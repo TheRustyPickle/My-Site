@@ -13,7 +13,7 @@ FROM chef AS builder
 
 # Install required tools
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends protobuf-compiler ffmpeg curl wget binaryen \
+  && apt-get install -y --no-install-recommends protobuf-compiler curl wget binaryen \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
@@ -44,7 +44,7 @@ RUN cargo leptos build --split --release
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*

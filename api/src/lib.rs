@@ -4,9 +4,6 @@ use shared::models::{Downloads, RepoReleasesSummary};
 use vial_shared::EncryptedPayload;
 
 #[cfg(feature = "ssr")]
-pub mod reddit;
-
-#[cfg(feature = "ssr")]
 pub mod github;
 
 #[cfg(feature = "ssr")]
@@ -17,17 +14,8 @@ pub mod secret;
 
 #[server]
 #[lazy]
-pub async fn reddit_downloader(post_id: String) -> Result<Downloads, ServerFnError> {
-    use crate::reddit::get_reddit_url;
-    use log::error;
-
-    match get_reddit_url(&post_id).await {
-        Ok(data) => Ok(data),
-        Err(e) => {
-            error!("Failed to download reddit data. Reason: {e}");
-            Err(ServerFnError::new(e))
-        }
-    }
+pub async fn reddit_downloader(_post_id: String) -> Result<Downloads, ServerFnError> {
+    Err(ServerFnError::new("Reddit API is no longer available"))
 }
 
 #[server]
