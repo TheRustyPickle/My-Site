@@ -7501,9 +7501,9 @@ dependencies = [
 
 [[package]]
 name = "vial-srv"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "330a2ef01e5dcfd8b87d7a1f621dea2f6c54892c41b266b3b438158f054b23e8"
+checksum = "9f1c8eea23e93fc869e28d6a7d93213a9d302c94d5cee7a854a7a821979cda1a"
 dependencies = [
  "chrono",
  "diesel",

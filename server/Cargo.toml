@@ -46,4 +46,4 @@ ulid.workspace = true
 url = "2.5.8"
 urlencoding = "2.1"
 vial-shared = { workspace = true, features = ["config"] }
-vial-srv = "0.2.0"
+vial-srv = "0.3.0"

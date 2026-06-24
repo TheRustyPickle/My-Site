@@ -32,7 +32,7 @@ pub async fn get_connection(url: &str) -> Pool<AsyncPgConnection> {
 
     Pool::builder()
         .max_size(10)
-        .min_idle(Some(5))
+        .min_idle(Some(2))
         .max_lifetime(Some(Duration::from_secs(60 * 60 * 24)))
         .idle_timeout(Some(Duration::from_secs(60 * 2)))
         .build(mgr)

@@ -74,7 +74,7 @@ async fn main() -> std::io::Result<()> {
     let addr_clone = addr.clone();
 
     let db_url = config.get_database_url_verified();
-    let db_handler = get_connection(&db_url).await;
+    let db_handler = get_connection(&db_url, 10, Some(2)).await;
 
     // INFO: Add it add a later point perhaps
     // db_handler.clear_expired_days(30);
