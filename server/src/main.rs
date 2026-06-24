@@ -176,8 +176,6 @@ async fn main() -> std::io::Result<()> {
     let server_clone = server.clone();
     spawn(server.run(cmd_rx));
 
-    // TODO: Fix cors url
-
     HttpServer::new(move || {
         let server_clone = server_clone.clone();
         let handler_clone = handler.clone();
