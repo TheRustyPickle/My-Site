@@ -291,6 +291,7 @@ impl Server {
     }
 
     pub async fn telegram(&mut self, conn_id: ConnId, tg_user: TelegramUser) -> Result<WsResponse> {
+        info!("Telegram user: {tg_user:#?}");
         {
             let user = self
                 .logged_in
@@ -302,6 +303,8 @@ impl Server {
                     "Could not verify Telegram login. Please try again",
                 )));
             }
+
+            info!("Hash verification success");
 
             let mut conn = self.pool.get().await?;
 
