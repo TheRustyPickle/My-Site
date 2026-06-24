@@ -1,4 +1,3 @@
-
 use anyhow::{Context, Result as AResult};
 use api::get_secret;
 use base64::Engine as _;
@@ -20,7 +19,6 @@ use web_sys::wasm_bindgen::JsCast as _;
 use web_sys::{HtmlAnchorElement, Url};
 
 use crate::utils::create_blob_url_no_mime;
-
 
 #[derive(Serialize, Deserialize, Clone)]
 struct WorkerRequest {

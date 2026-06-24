@@ -195,11 +195,11 @@ async fn main() -> std::io::Result<()> {
                 matches!(
                     origin.to_str(),
                     Ok("http://localhost:3000"
-                        | "https://origil.netlify.app"
+                        | "https://rustypickle.onrender.com"
                         | "http://127.0.0.1:3000")
                 )
             })
-            .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
+            .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
                 http::header::CONTENT_TYPE,
