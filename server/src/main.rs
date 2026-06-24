@@ -193,7 +193,7 @@ async fn main() -> std::io::Result<()> {
                 matches!(
                     origin.to_str(),
                     Ok("http://localhost:3000"
-                        | "https://rustypickle.onrender.com"
+                        | "https://tbdapp.netlify.app"
                         | "http://127.0.0.1:3000")
                 )
             })

@@ -291,17 +291,13 @@ impl Server {
     }
 
     pub async fn telegram(&mut self, conn_id: ConnId, tg_user: TelegramUser) -> Result<WsResponse> {
-        info!("Telegram user: {tg_user:#?}");
         {
-            info!("Starting Telegram hash verification");
             if let Err(e) = verify_hash(&tg_user) {
                 error!("Telegram hash verification failed. Reason: {:?}", e);
                 return Ok(WsResponse::telegram_error(String::from(
                     "Could not verify Telegram login. Please try again",
                 )));
             }
-
-            info!("Hash verification success");
 
             let mut conn = self.pool.get().await?;
 
