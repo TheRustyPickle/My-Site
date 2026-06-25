@@ -47,11 +47,6 @@ pub async fn upload_avatar(
     let token = extract_token(req.headers())
         .ok_or_else(|| error::ErrorUnauthorized("Missing or invalid Authorization header"))?;
 
-    let ip_local = req
-        .peer_addr()
-        .map(|addr| addr.ip().to_string())
-        .unwrap_or_default();
-
     let user_agent = req
         .headers()
         .get("user-agent")
@@ -64,10 +59,16 @@ pub async fn upload_avatar(
         .get("X-Forwarded-For")
         .map(|v| v.to_str().unwrap_or_default())
         .unwrap_or_default()
+        .split(',')
+        .next()
+        .unwrap_or("")
+        .trim()
         .to_string();
 
     let ip = if forwarded_ip.is_empty() {
-        ip_local
+        req.peer_addr()
+            .map(|addr| addr.ip().to_string())
+            .unwrap_or_default();
     } else {
         forwarded_ip
     };
