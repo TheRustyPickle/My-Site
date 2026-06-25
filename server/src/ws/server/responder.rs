@@ -187,8 +187,6 @@ impl Server {
 
         let work_string = format!("{:?}", command.work);
 
-        log::info!("Handling work: {}", work_string);
-
         let response = match command.work {
             Work::Connect { conn_tx, sender } => {
                 let conn_id = self.connect(conn_tx);
