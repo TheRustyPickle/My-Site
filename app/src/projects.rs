@@ -20,6 +20,7 @@ enum ContentProject {
     Theme,
     Pulse,
     Vial,
+    NoName,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -648,7 +649,7 @@ fn get_project_list() -> Vec<Project> {
 
     let reddit_dl_content = ProjectContent {
         content: ContentProject::RedditDL,
-        demo_link: Some(String::from("/reddit")),
+        demo_link: None,
         images: Some(vec![String::from("/assets/dl_reddit.png")]),
         source_link: String::from("https://github.com/TheRustyPickle/My-Site"),
     };
@@ -773,6 +774,32 @@ fn get_project_list() -> Vec<Project> {
         content: vial_content,
     };
 
+    let no_name_content = ProjectContent {
+        content: ContentProject::NoName,
+        demo_link: Some(String::from("https://tbdapp.netlify.app")),
+        images: Some(vec![
+            String::from("/assets/flappy.png"),
+            String::from("/assets/tetris.png"),
+            String::from("/assets/2048.png"),
+            String::from("/assets/snake.png"),
+        ]),
+        source_link: String::from("https://github.com/TheRustyPickle/NoName"),
+    };
+    let no_name = Project {
+        title_image: Some(String::from("/assets/flappy.png")),
+        name: String::from("No Name"),
+        description: String::from("A web game prototype"),
+        badges: vec![
+            "Rust".to_string(),
+            "Typescript".to_string(),
+            "Actix-Web".to_string(),
+            "PostgreSQL".to_string(),
+            "Redis".to_string(),
+            "Websocket".to_string(),
+        ],
+        content: no_name_content,
+    };
+
     vec![
         rex,
         talon,
@@ -782,6 +809,7 @@ fn get_project_list() -> Vec<Project> {
         crane,
         repo_dl,
         reddit_dl,
+        no_name,
         selectable_table,
         theme_lerp,
         pulse,
@@ -958,7 +986,7 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
         }.into_any(),
         ContentProject::RedditDL => view! {
             <p class="text-lg font-medium">
-                "A lightweight tool for quickly downloading videos and images from Reddit posts"
+                "A lightweight tool for quickly downloading videos and images from Reddit posts. Currently offline since reddit stopped API support"
             </p>
         }.into_any(),
         ContentProject::Table => view! {
@@ -1084,6 +1112,29 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
 
             </div>
         }.into_any(),
+        ContentProject::NoName => view! {
+            <p class="text-lg font-medium">
+                "A project to experiment with Web3 alongside an attempt at gaining experience with Redis. The project contains a frontend created with Next.js and a websocket backend created with Rust + Actix-Web. A good chunk of the frontend was created with AI."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"What It Does"</p>
+
+            <ul class="mt-2 list-disc list-inside space-y-2">
+                <li>"Contains 4 games Tetris, 2048, Snake and Flappy Bird for gaining points with increasing difficulty"</li>
+                <li>"A real-time leaderboard that updates on any point changes for the top players"</li>
+                <li>"A referral program that allows gaining % of points from referrals"</li>
+                <li>"Backend that verifies game moves from the frontend and ensures it's valid"</li>
+                <li>"A small task system for gaining points"</li>
+                <li>"Uses ETH or Solana wallet to log in"</li>
+            </ul>
+
+            <div class="flex flex-col">
+                <p class="mt-4 text-md">"Use referral code:"</p>
+                <p class="mt-4 text-md font-semibold">"TEST"</p>
+                <p class="mt-4 text-md">"to see the referral program"</p>
+
+            </div>
+        }.into_any()
 
     }
 }

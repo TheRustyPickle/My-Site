@@ -55,7 +55,7 @@ impl LazyRoute for AboutView {
 
         let p_4 = "I'm always up for a chat about programming, \
         open-source, or whatever interesting project \
-        you're working on—feel free to reach out!";
+        you're working on, feel free to reach out!";
 
         view! {
             <Title text="About | Rusty Pickle" />
