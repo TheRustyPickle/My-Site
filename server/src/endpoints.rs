@@ -74,7 +74,8 @@ pub async fn upload_avatar(
 
     let user_ip_agent = UserIpAgent { ip, user_agent };
 
-    let claims = validate_token(&token, &user_ip_agent).map_err(|_| {
+    let claims = validate_token(&token, &user_ip_agent).map_err(|e| {
+        error!("Failed to validate token: {}", e);
         error::ErrorUnauthorized("Invalid or expired token. Please reload the site and try again")
     })?;
 
