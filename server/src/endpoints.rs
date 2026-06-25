@@ -68,7 +68,7 @@ pub async fn upload_avatar(
     let ip = if forwarded_ip.is_empty() {
         req.peer_addr()
             .map(|addr| addr.ip().to_string())
-            .unwrap_or_default();
+            .unwrap_or_default()
     } else {
         forwarded_ip
     };
