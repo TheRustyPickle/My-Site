@@ -13,10 +13,16 @@ FROM chef AS builder
 
 # Install required tools
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends protobuf-compiler curl wget binaryen \
+  && apt-get install -y --no-install-recommends protobuf-compiler curl wget \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://github.com/WebAssembly/binaryen/releases/download/version_131/binaryen-version_131-x86_64-linux.tar.gz \
+    && tar -xvzf binaryen-version_131-x86_64-linux.tar.gz \
+    && cp binaryen-version_131/bin/wasm-opt /usr/local/bin/ \
+    && rm -rf binaryen-version_131*
+
 RUN rustup target add wasm32-unknown-unknown
 RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/leptos-rs/cargo-leptos/releases/download/v0.3.7/cargo-leptos-installer.sh | sh
 WORKDIR /app
