@@ -22,10 +22,6 @@ use tokio::time::Duration;
 const CERT: &[u8] = include_bytes!("ca.pem");
 
 pub async fn get_connection(url: &str) -> Pool<AsyncPgConnection> {
-    // rustls::crypto::ring::default_provider()
-    //     .install_default()
-    //     .expect("Failed to install rustls crypto provider");
-
     let mut config = ManagerConfig::default();
     config.custom_setup = Box::new(establish_connection);
     let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(url, config);

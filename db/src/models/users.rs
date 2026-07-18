@@ -30,7 +30,7 @@ impl User {
         evm_wallet: Option<String>,
         photo_url: String,
     ) -> Self {
-        let user_id = Ulid::new().to_string();
+        let user_id = Ulid::generate().to_string();
         let joined_at = Utc::now();
 
         Self {

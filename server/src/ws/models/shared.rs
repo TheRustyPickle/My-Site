@@ -484,7 +484,7 @@ impl MiniTask {
         if let Some(url) = &task.redirect_url
             && url.contains(BACKEND_URL.get().unwrap())
         {
-            let ulid = Ulid::new().to_string();
+            let ulid = Ulid::generate().to_string();
             let code_verifier = CodeVerifier {
                 created_on: Utc::now(),
                 lifetime: 60,

@@ -6,6 +6,7 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix-web = { workspace = true, optional = true }
 anyhow = { workspace = true }
 leptos.workspace = true
 leptos_actix = { workspace = true, optional = true }
@@ -15,7 +16,6 @@ log.workspace = true
 serde.workspace = true
 vial-shared.workspace = true
 
-actix-web = { workspace = true, optional = true }
 base64 = "0.22.1"
 icondata = { version = "0.7.0", default-features = false, features = [
   "font-awesome",
@@ -25,8 +25,8 @@ icondata = { version = "0.7.0", default-features = false, features = [
 leptos_workers = "0.3.0"
 thaw = { git = "https://github.com/thaw-ui/thaw", rev = "35254c7fd4cb33bc8a27a8c7b11dc4a71cbdcbac", optional = true }
 thousands = "0.2.0"
-vial-core = "0.2.0"
-web-sys = { version = "0.3.83", default-features = false, features = [
+vial-core = "0.4.0"
+web-sys = { version = "0.3.103", default-features = false, features = [
   "Blob",
   "BlobPropertyBag",
   "Clipboard",

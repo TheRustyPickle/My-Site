@@ -53,7 +53,7 @@ impl Task {
         reward_point: i32,
         backend_url: &str,
     ) -> anyhow::Result<Self> {
-        let id = Ulid::new().to_string();
+        let id = Ulid::generate().to_string();
         let created_at = Utc::now();
         let redirect_url = Task::enforce_rules(
             &id,

@@ -193,6 +193,7 @@ async fn main() -> std::io::Result<()> {
                 matches!(
                     origin.to_str(),
                     Ok("http://localhost:3000"
+                        | "http://localhost:8080"
                         | "https://tbdapp.netlify.app"
                         | "http://127.0.0.1:3000")
                 )
@@ -234,6 +235,7 @@ async fn main() -> std::io::Result<()> {
                     && !path.ends_with(".wasm")
                     && !path.starts_with("/assets/")
                     && !path.starts_with("/favicon.ico")
+                    && !path.starts_with("/robots.txt")
                     && path != "/sw.js"
                     && !ignore_ip_list.contains(&ip.as_str())
                 {
@@ -248,7 +250,10 @@ async fn main() -> std::io::Result<()> {
             })
             .app_data(Data::new(db_handler.clone()))
             .app_data(Data::new(config.clone()))
-            .app_data(web::JsonConfig::default().limit(config.get_max_size_verified()))
+            .app_data(
+                web::JsonConfig::default()
+                    .limit((config.get_max_size_verified() * 4).div_ceil(3) + 1024),
+            )
             .app_data(Data::new(handler_clone))
             .app_data(Data::new(server_clone))
             .app_data(Data::new(verifier_list))
@@ -337,7 +342,7 @@ async fn ping_site() {
 
 async fn ping_api() {
     let client = Client::new();
-    let url = "https://svp-dashboard.vercel.app/api/svp/cleanup";
+    let url = "https://svp-service.vercel.app/api/svp/cleanup";
 
     let auth_token = match std::env::var("CLEANUP_SECRET") {
         Ok(token) => token,
@@ -392,8 +397,9 @@ async fn create_secret(
             payload.ciphertext.len()
         );
 
-        return HttpResponse::PayloadTooLarge()
-            .body("Payload size is invalid. Max size is {MAX_SIZE} bytes");
+        return HttpResponse::PayloadTooLarge().body(format!(
+            "Payload size is invalid. Max size is {max_size} bytes"
+        ));
     }
 
     if let Some(payload_day) = payload.expires_at {
@@ -405,7 +411,7 @@ async fn create_secret(
                 payload_day
             );
 
-            return server_error_to_response(ServerError::InvalidExpire);
+            return server_error_to_response(ServerError::InvalidExpire(max_day as i64));
         }
     }
 
@@ -413,11 +419,11 @@ async fn create_secret(
         && (payload_view > max_view as i32 || payload_view < 1)
     {
         info!("Payload view is invalid. Max view is {max_view}. Gotten {payload_view}");
-        return server_error_to_response(ServerError::InvalidViewCount);
+        return server_error_to_response(ServerError::InvalidViewCount(max_view as i32));
     }
 
     db_handler
-        .new_secret(payload)
+        .new_secret(payload, max_day as i64, max_view as i32)
         .await
         .map_or_else(server_error_to_response, |id| {
             info!("Created secret with id: {id}");
@@ -428,8 +434,8 @@ async fn create_secret(
 fn server_error_to_response(e: ServerError) -> HttpResponse {
     match e {
         ServerError::ViewAndExpireEmpty
-        | ServerError::InvalidExpire
-        | ServerError::InvalidViewCount => HttpResponse::BadRequest().body(e.to_string()),
+        | ServerError::InvalidExpire(_)
+        | ServerError::InvalidViewCount(_) => HttpResponse::BadRequest().body(e.to_string()),
 
         ServerError::DatabaseError(e) => {
             error!("Database error: {e}");
