@@ -26,7 +26,7 @@ leptos_workers = "0.3.0"
 thaw = { git = "https://github.com/thaw-ui/thaw", rev = "35254c7fd4cb33bc8a27a8c7b11dc4a71cbdcbac", optional = true }
 thousands = "0.2.0"
 vial-core = "0.4.0"
-web-sys = { version = "0.3.83", default-features = false, features = [
+web-sys = { version = "0.3.103", default-features = false, features = [
   "Blob",
   "BlobPropertyBag",
   "Clipboard",
