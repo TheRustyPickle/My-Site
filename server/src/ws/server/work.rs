@@ -263,7 +263,7 @@ impl Server {
         let mut social_links = SocialLinks::new();
 
         if !twitter {
-            let new_state = Ulid::new().to_string();
+            let new_state = Ulid::generate().to_string();
             let twitter_link = generate_twitter_oauth2_url(&new_state, conn_id);
 
             self.code_verifiers
@@ -273,7 +273,7 @@ impl Server {
         }
 
         if !discord {
-            let new_state = Ulid::new().to_string();
+            let new_state = Ulid::generate().to_string();
             let discord_link = generate_discord_oauth2_url(&new_state, conn_id);
 
             self.code_verifiers

@@ -189,7 +189,7 @@ fn show_dialog(project: Project, dialog_open: RwSignal<bool>) -> impl IntoView {
                                     appearance=ButtonAppearance::Primary
                                     icon=icondata::MdiLinkVariant
                                 >
-                                    "Live Demo"
+                                    "View Online"
                                 </Button>
                             </a>
                         }
@@ -576,7 +576,7 @@ fn get_project_list() -> Vec<Project> {
 
     let funnel_content = ProjectContent {
         content: ContentProject::Funnel,
-        demo_link: Some(String::from("https://therustypickle.github.io/Funnel-Web/")),
+        demo_link: None,
         images: Some(vec![
             String::from("/assets/funnel_1.png"),
             String::from("/assets/funnel_2.png"),
@@ -747,7 +747,7 @@ fn get_project_list() -> Vec<Project> {
     let vial_content = ProjectContent {
         content: ContentProject::Vial,
         demo_link: Some(String::from(
-            "https://rustypickle.onrender.com/secrets/01KFZPC330S6S45221BF7XV8JR",
+            "https://rustypickle.onrender.com/secrets/01KXTPKKRVR26XK2QWANXHHYZ6",
         )),
         images: Some(vec![
             String::from("/assets/vial_1.png"),
@@ -839,9 +839,9 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
                     "Access a summary with key insights on income, expense, and percentage distribution."
                 </li>
                 <li>"Built using SQLite, keeping everything local."</li>
-                <li>Find transactions quickly using partial or specific information.</li>
+                <li>"Find transactions quickly using partial or specific information."</li>
                 <li>"Organize transactions with custom tags for easy filtering."</li>
-                <li>Works fully offline.</li>
+                <li>"Works fully offline."</li>
             </ul>
         }.into_any(),
         ContentProject::Talon => view! {

@@ -1,7 +1,4 @@
-use anyhow::{Context, Result as AResult};
 use api::get_secret;
-use base64::Engine as _;
-use base64::engine::general_purpose::URL_SAFE;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_meta::Title;
@@ -11,9 +8,9 @@ use leptos_workers::worker;
 use serde::{Deserialize, Serialize};
 use thaw::{
     Button, ButtonAppearance, ButtonShape, ButtonSize, Card, Icon, Input, InputPrefix, InputSize,
-    InputSuffix, InputType, Radio, RadioGroup, Spinner, Textarea,
+    InputSuffix, InputType, Spinner, Textarea,
 };
-use vial_core::crypto::{decrypt_with_password, decrypt_with_random_key};
+use vial_core::crypto::decrypt;
 use vial_shared::{EncryptedPayload, FullSecret, FullSecretV1, Payload, SecretFile};
 use web_sys::wasm_bindgen::JsCast as _;
 use web_sys::{HtmlAnchorElement, Url};
@@ -25,29 +22,25 @@ struct WorkerRequest {
     payload: EncryptedPayload,
     hash: String,
     key: String,
-    schema: String,
 }
 
 #[worker(MyFutureWorker)]
 fn my_worker(request: WorkerRequest) -> Result<FullSecretV1, String> {
-    let WorkerRequest {
-        payload,
-        hash,
-        key,
-        schema,
-    } = &request;
+    let WorkerRequest { payload, hash, key } = &request;
 
-    let result = if hash.is_empty() {
-        match schema.as_str() {
-            "Password" => decrypt_password(key, &payload.payload),
-            "Random" => decrypt_random_key(key, &payload.payload),
-            _ => unreachable!(),
-        }
+    let bytes = if hash.is_empty() {
+        decrypt(&payload.payload, key)
     } else {
-        decrypt_random_key(hash, &payload.payload)
-    };
+        decrypt(&payload.payload, hash)
+    }
+    .map_err(|e| format!("Failed to decrypt secret: {e:#}"))?;
 
-    result.map_err(|e| format!("{e:#}"))
+    let secret = Payload::from_bytes(bytes)
+        .map_err(|e| format!("Failed to deserialize secret: {e:#}"))?
+        .to_full_secret()
+        .map_err(|e| format!("Failed to deserialize secret: {e:#}"))?;
+
+    Ok(secret)
 }
 
 pub struct SecretView {
@@ -75,7 +68,6 @@ impl LazyRoute for SecretView {
         let (decrypt_key, set_decrypt_key) = signal(String::new());
 
         let inputted_key = RwSignal::new(String::new());
-        let radio_value = RwSignal::new(String::from("Password"));
 
         let (pending, set_pending) = signal(None::<FullSecret>);
 
@@ -92,12 +84,6 @@ impl LazyRoute for SecretView {
 
             set_decrypt_key.set(final_hash.clone());
             set_hash.set(final_hash);
-        });
-
-        // If radio value changes, clear the error
-        Effect::new(move |_| {
-            let _ = radio_value.get();
-            set_error.set(String::new());
         });
 
         // Utility for handling errors
@@ -169,7 +155,6 @@ impl LazyRoute for SecretView {
                 payload,
                 hash,
                 key: decrypt_key.get(),
-                schema: radio_value.get(),
             };
 
             handle_worker(request);
@@ -238,11 +223,6 @@ impl LazyRoute for SecretView {
                         </p>
                     </Show>
 
-                    <RadioGroup value=radio_value class="flex flex-col sm:flex-row gap-2">
-                        <Radio value="Password" label="Use password schema" />
-                        <Radio value="Random" label="Use random key schema" />
-                    </RadioGroup>
-
                     <Button
                         appearance=ButtonAppearance::Primary
                         shape=ButtonShape::Circular
@@ -268,7 +248,6 @@ impl LazyRoute for SecretView {
                 payload: payload.get().unwrap(),
                 hash: hash.get(),
                 key: String::new(),
-                schema: String::from("Random"),
             };
 
             handle_worker(request);
@@ -458,36 +437,4 @@ fn download_file(name: &str, content: &[u8]) {
     a.click();
 
     Url::revoke_object_url(&url).ok();
-}
-
-fn decrypt_random_key(key: &str, payload: &[u8]) -> AResult<FullSecretV1> {
-    let decoded_key = URL_SAFE
-        .decode(key)
-        .context("Failed to decode key. Is the key valid?")?;
-
-    let arr_ref: &[u8; 32] = decoded_key
-        .as_slice()
-        .try_into()
-        .context("Failed to decode key. Is the key valid")?;
-
-    let decrypted =
-        decrypt_with_random_key(payload, arr_ref).context("Failed to decrypt secret")?;
-
-    let full_secret = Payload::from_bytes(decrypted)
-        .context("Failed to deserialize secret")?
-        .to_full_secret()
-        .context("Failed to deserialize secret")?;
-
-    Ok(full_secret)
-}
-
-fn decrypt_password(key: &str, payload: &[u8]) -> AResult<FullSecretV1> {
-    let decrypted = decrypt_with_password(payload, key).context("Failed to decrypt secret")?;
-
-    let full_secret = Payload::from_bytes(decrypted)
-        .context("Failed to serialize secret")?
-        .to_full_secret()
-        .context("Failed to serialize secret")?;
-
-    Ok(full_secret)
 }

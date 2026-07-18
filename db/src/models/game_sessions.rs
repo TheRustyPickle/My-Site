@@ -45,7 +45,7 @@ pub struct GameSession {
 impl GameSession {
     #[must_use]
     pub fn new(user_id: String, game: GameType, start_time: DateTime<Utc>) -> Self {
-        let id = Ulid::new().to_string();
+        let id = Ulid::generate().to_string();
         Self {
             id,
             user_id,
