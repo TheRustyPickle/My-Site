@@ -21,6 +21,7 @@ enum ContentProject {
     Pulse,
     Vial,
     NoName,
+    CommentRot,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -800,6 +801,26 @@ fn get_project_list() -> Vec<Project> {
         content: no_name_content,
     };
 
+    let rot_content = ProjectContent {
+        content: ContentProject::CommentRot,
+        demo_link: None,
+        images: None,
+        source_link: String::from("https://github.com/TheRustyPickle/comment-rot"),
+    };
+    let comment_rot = Project {
+        title_image: Some(String::from("/assets/placeholder.svg")),
+        name: String::from("Comment Rot"),
+        description: String::from("Stale comment finder"),
+        badges: vec![
+            "Rust".to_string(),
+            "Lua".to_string(),
+            "CLI".to_string(),
+            "Neovim Plugin".to_string(),
+            "Tree-sitter".to_string(),
+        ],
+        content: rot_content,
+    };
+
     vec![
         rex,
         talon,
@@ -811,6 +832,7 @@ fn get_project_list() -> Vec<Project> {
         reddit_dl,
         no_name,
         selectable_table,
+        comment_rot,
         theme_lerp,
         pulse,
     ]
@@ -1120,8 +1142,12 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
             <p class="mt-4 text-lg font-semibold">"What It Does"</p>
 
             <ul class="mt-2 list-disc list-inside space-y-2">
-                <li>"Contains 4 games Tetris, 2048, Snake and Flappy Bird for gaining points with increasing difficulty"</li>
-                <li>"A real-time leaderboard that updates on any point changes for the top players"</li>
+                <li>
+                    "Contains 4 games Tetris, 2048, Snake and Flappy Bird for gaining points with increasing difficulty"
+                </li>
+                <li>
+                    "A real-time leaderboard that updates on any point changes for the top players"
+                </li>
                 <li>"A referral program that allows gaining % of points from referrals"</li>
                 <li>"Backend that verifies game moves from the frontend and ensures it's valid"</li>
                 <li>"A small task system for gaining points"</li>
@@ -1134,6 +1160,17 @@ fn get_project_content(project: ContentProject) -> impl IntoView {
                 <p class="mt-4 text-md">"to see the referral program"</p>
 
             </div>
+        }.into_any(),
+
+        ContentProject::CommentRot => view! {
+            <p class="text-lg font-medium">
+                "Finds comments that went stale when the code next to them changed."
+            </p>
+
+            <p class="mt-4 text-lg font-semibold">"How it works"</p>
+            <p class="font-medium">
+                "Rot snapshots each comment alongside the code it's attached to. On the next scan, code changed but the comment didn't gets flagged for review. Comments are tracked by what they document, not by line number, so unrelated edits never cause false positives."
+            </p>
         }.into_any()
 
     }
