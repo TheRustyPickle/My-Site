@@ -1,4 +1,4 @@
-FROM rust:1.96-bookworm AS chef
+FROM rust:1.98.1-bookworm AS chef
 # Use cargo-chef to cache dependencies
 RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/LukeMathWalker/cargo-chef/releases/download/v0.1.77/cargo-chef-installer.sh | sh
 
